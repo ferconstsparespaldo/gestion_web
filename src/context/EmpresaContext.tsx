@@ -27,6 +27,8 @@ export type EmpresaConfig = {
   titular: string;
   rutTitular: string;
   correoPago: string;
+  valorHoraDefecto: number;
+  numTrabajadoresDefecto: number;
 };
 
 export const EMPRESA_POR_DEFECTO: EmpresaConfig = {
@@ -46,6 +48,8 @@ export const EMPRESA_POR_DEFECTO: EmpresaConfig = {
   titular: '',
   rutTitular: '',
   correoPago: '',
+  valorHoraDefecto: 0,
+  numTrabajadoresDefecto: 1,
 };
 
 type EmpresaContextValue = {
@@ -95,6 +99,8 @@ export function EmpresaProvider({ children }: { children: ReactNode }) {
         titular: data.titular || '',
         rutTitular: data.rut_titular || '',
         correoPago: data.correo_pago || '',
+        valorHoraDefecto: Number(data.valor_hora_defecto ?? 0),
+        numTrabajadoresDefecto: Number(data.num_trabajadores_defecto ?? 1),
       });
     }
 

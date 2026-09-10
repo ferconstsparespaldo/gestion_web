@@ -89,6 +89,18 @@ verificaciones en GitHub.
 
 La carpeta `supabase/migrations/` contiene, en orden:
 
+0. `202609060000_esquema_base.sql`
+   - **Ejecutar siempre primero.** Reconstruye el esquema completo
+     (`profiles`, `configuracion_empresa`, `clientes`, `proveedores`,
+     `productos`, `producto_proveedor`, `cotizaciones`,
+     `cotizacion_items`, `pagos_clientes`, `pagos_proveedores`,
+     `categorias_gasto`, `gastos`, `impuestos_mensuales`) y los buckets de
+     Storage (`productos`, `assets`). Las migraciones que siguen fueron
+     escritas como parches incrementales sobre una base que en el
+     despliegue original se creó a mano desde el SQL Editor de Supabase y
+     nunca quedó documentada como migración; este archivo cierra ese
+     vacío para que un proyecto nuevo se pueda levantar ejecutando solo
+     el contenido de esta carpeta, en orden.
 1. `202609070001_integridad_operacional.sql`
    - correlativos seguros para cotizaciones;
    - número de cotización único;
@@ -121,9 +133,36 @@ La carpeta `supabase/migrations/` contiene, en orden:
      con RLS exclusiva para administradores.
 8. `202609090004_capital_socios_permisos.sql`
    - revoca el privilegio por defecto de `anon` sobre `capital_movimientos`.
+9. `202609100000_correcciones_proveedores.sql`
+   - agrega `desactivar_proveedor_admin` (el frontend ya la invocaba pero
+     no existía como migración) y los mismos resguardos de solo-admin que
+     ya tenían clientes/productos.
+10. `202609100001_sectores.sql`
+    - catálogo de sectores/obras (tabla, RLS, baja administrada).
+11. `202609100002_cotizaciones_ferconst.sql`
+    - agrega a `cotizaciones`: sector, N° de orden, fecha(s) trabajada(s)
+      y bloque de mano de obra (horario, N° de trabajadores, valor hora,
+      costo HH calculado); agrega valores por defecto de mano de obra a
+      `configuracion_empresa`.
+12. `202609100003_productos_proveedor_opcional.sql`
+    - el proveedor deja de ser obligatorio al crear un producto.
+13. `202609100004_numeracion_simple.sql`
+    - cambia la numeración de cotizaciones de `PREFIJO-AÑO-0001` a un
+      correlativo simple y continuo (sin prefijo ni año), y siembra el
+      correlativo para continuar desde donde haya quedado la numeración
+      anterior de la empresa.
 
 > **Importante:** prueba siempre las migraciones primero en una copia/staging
 > de la base Supabase de cada cliente.
+
+Después de aplicar todas las migraciones, `supabase/scripts/` tiene
+scripts de datos que se ejecutan aparte (no son migraciones versionadas):
+
+- `cargar_materiales_ferconst.sql`: carga el catálogo de materiales de
+  Ferconst SpA en `productos`/`producto_proveedor` a partir del Excel de
+  cotización de la empresa. Seguro de re-ejecutar.
+- `limpiar_datos_prueba.sql`: borra datos de prueba (ver comentarios en
+  el propio archivo antes de usarlo).
 
 ## Edge Function `admin-users`
 

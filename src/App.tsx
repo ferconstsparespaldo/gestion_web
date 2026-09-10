@@ -8,6 +8,7 @@ import { EmpresaProvider, useEmpresa } from './context/EmpresaContext';
 import { iniciales } from './utils/formato';
 
 import Clientes from './components/Clientes';
+import Sectores from './components/Sectores';
 import Proveedores from './components/Proveedores';
 import Productos from './components/Productos';
 import Cotizaciones from './components/Cotizaciones';
@@ -32,6 +33,7 @@ type Profile = {
 type Pagina =
   | 'dashboard'
   | 'clientes'
+  | 'sectores'
   | 'cotizaciones'
   | 'productos'
   | 'proveedores'
@@ -45,6 +47,7 @@ type Pagina =
 const NOMBRE_PAGINA: Record<Pagina, string> = {
   dashboard: 'Dashboard',
   clientes: 'Clientes',
+  sectores: 'Sectores',
   cotizaciones: 'Cotizaciones',
   productos: 'Productos',
   proveedores: 'Proveedores',
@@ -59,6 +62,7 @@ const NOMBRE_PAGINA: Record<Pagina, string> = {
 const SECCION_PAGINA: Record<Pagina, string> = {
   dashboard: 'Principal',
   clientes: 'Comercial',
+  sectores: 'Comercial',
   cotizaciones: 'Comercial',
   productos: 'Catálogo',
   proveedores: 'Catálogo',
@@ -339,6 +343,9 @@ function AppShell({
       case 'clientes':
         return <Clientes esAdmin={esAdmin} />;
 
+      case 'sectores':
+        return <Sectores esAdmin={esAdmin} />;
+
       case 'cotizaciones':
         return <Cotizaciones esAdmin={esAdmin} />;
 
@@ -409,6 +416,14 @@ function AppShell({
           >
             <span className="nav-icon">◉</span>
             <span>Clientes</span>
+          </button>
+
+          <button
+            className={pagina === 'sectores' ? 'active' : ''}
+            onClick={() => setPagina('sectores')}
+          >
+            <span className="nav-icon">◈</span>
+            <span>Sectores</span>
           </button>
 
           <button

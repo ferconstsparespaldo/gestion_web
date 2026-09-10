@@ -260,12 +260,6 @@ function Productos({ esAdmin }: ProductosProps) {
       return;
     }
 
-    if (!form.proveedor_id) {
-      setError('Debes seleccionar un proveedor.');
-      setGuardando(false);
-      return;
-    }
-
     if (precioNeto < 0 || beneficio < 0) {
       setError('Los precios no pueden ser negativos.');
       setGuardando(false);
@@ -521,7 +515,7 @@ function Productos({ esAdmin }: ProductosProps) {
               {/* PROVEEDOR */}
 
               <label>
-                Proveedor *
+                Proveedor (opcional)
                 <select
                   value={form.proveedor_id}
                   onChange={(e) =>
@@ -530,9 +524,8 @@ function Productos({ esAdmin }: ProductosProps) {
                       proveedor_id: e.target.value,
                     })
                   }
-                  required
                 >
-                  <option value="">Seleccionar proveedor</option>
+                  <option value="">Sin proveedor</option>
 
                   {proveedores.map((proveedor) => (
                     <option key={proveedor.id} value={proveedor.id}>

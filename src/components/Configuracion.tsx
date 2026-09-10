@@ -21,6 +21,8 @@ type ConfiguracionForm = {
   titular: string;
   rut_titular: string;
   correo_pago: string;
+  valor_hora_defecto: number;
+  num_trabajadores_defecto: number;
 };
 
 type TabConfiguracion = 'empresa' | 'cotizaciones' | 'usuarios' | 'parametros';
@@ -61,6 +63,8 @@ const CONFIG_POR_DEFECTO: ConfiguracionForm = {
   titular: '',
   rut_titular: '',
   correo_pago: '',
+  valor_hora_defecto: 0,
+  num_trabajadores_defecto: 1,
 };
 
 const USUARIO_VACIO: UsuarioForm = {
@@ -149,6 +153,8 @@ function Configuracion() {
         titular: data.titular || '',
         rut_titular: data.rut_titular || '',
         correo_pago: data.correo_pago || '',
+        valor_hora_defecto: Number(data.valor_hora_defecto ?? 0),
+        num_trabajadores_defecto: Number(data.num_trabajadores_defecto ?? 1),
       });
     } else {
       setConfigId(null);
@@ -234,6 +240,8 @@ function Configuracion() {
       titular: form.titular.trim() || null,
       rut_titular: form.rut_titular.trim() || null,
       correo_pago: form.correo_pago.trim() || null,
+      valor_hora_defecto: Number(form.valor_hora_defecto) || 0,
+      num_trabajadores_defecto: Number(form.num_trabajadores_defecto) || 1,
     };
 
     if (configId) {
@@ -687,6 +695,49 @@ function Configuracion() {
                 Este porcentaje se utiliza en cotizaciones, gastos y cálculos internos.
                 Modificarlo afectará los documentos nuevos, no reescribe registros históricos.
               </p>
+            </div>
+          </div>
+
+          <div className="form-card config-single-card">
+            <div className="config-section-heading">
+              <div>
+                <span>MANO DE OBRA</span>
+                <h2>Horario y valor hora</h2>
+                <p>
+                  Valores que se cargan automáticamente al agregar el bloque de mano de
+                  obra en una cotización nueva (puedes ajustarlos en cada cotización).
+                </p>
+              </div>
+            </div>
+
+            <div className="form-grid">
+              <label>
+                Valor hora por defecto
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={form.valor_hora_defecto}
+                  onChange={(event) =>
+                    actualizarCampo('valor_hora_defecto', Number(event.target.value))
+                  }
+                />
+              </label>
+              <label>
+                N° de trabajadores por defecto
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={form.num_trabajadores_defecto}
+                  onChange={(event) =>
+                    actualizarCampo(
+                      'num_trabajadores_defecto',
+                      Number(event.target.value)
+                    )
+                  }
+                />
+              </label>
             </div>
           </div>
 

@@ -24,6 +24,11 @@ type Proveedor = {
   razon_social: string;
 };
 
+type Sector = {
+  id: string;
+  nombre: string;
+};
+
 type ProductoProveedor = {
   id: string;
   proveedor_id: string;
@@ -102,6 +107,8 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
   const [productos, setProductos] = useState<Producto[]>([]);
 
+  const [sectores, setSectores] = useState<Sector[]>([]);
+
   const { empresa } = useEmpresa();
   const ivaPorcentaje = empresa.ivaPorcentaje;
 
@@ -128,6 +135,21 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
   const [clienteSeleccionado, setClienteSeleccionado] =
     useState<Cliente | null>(null);
+
+  const [sectorId, setSectorId] = useState('');
+  const [sectorNombre, setSectorNombre] = useState('');
+  const [numeroOrden, setNumeroOrden] = useState('');
+
+  const [fechaTrabajoInicio, setFechaTrabajoInicio] = useState(
+    fechaLocalISO()
+  );
+  const [fechaTrabajoTermino, setFechaTrabajoTermino] = useState('');
+
+  const [horaDesde, setHoraDesde] = useState('');
+  const [horaHasta, setHoraHasta] = useState('');
+  const [horasTrabajadas, setHorasTrabajadas] = useState(0);
+  const [numTrabajadores, setNumTrabajadores] = useState(0);
+  const [valorHora, setValorHora] = useState(0);
 
   const [vigenciaDias, setVigenciaDias] = useState(
     empresa.vigenciaCotizacionDias
@@ -218,7 +240,7 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
     setLoading(true);
     setError('');
 
-    const [cotizacionesResult, clientesResult, productosResult] =
+    const [cotizacionesResult, clientesResult, sectoresResult, productosResult] =
       await Promise.all([
         supabase
           .from('cotizaciones')
@@ -255,6 +277,12 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
           .order('razon_social'),
 
         supabase
+          .from('sectores')
+          .select('id, nombre')
+          .eq('activo', true)
+          .order('nombre'),
+
+        supabase
           .from('productos')
           .select(
             `
@@ -287,6 +315,12 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
       setError(clientesResult.error.message);
     } else {
       setClientes((clientesResult.data || []) as Cliente[]);
+    }
+
+    if (sectoresResult.error) {
+      setError(sectoresResult.error.message);
+    } else {
+      setSectores((sectoresResult.data || []) as Sector[]);
     }
 
     if (productosResult.error) {
@@ -337,6 +371,19 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
     setClienteId('');
     setClienteSeleccionado(null);
 
+    setSectorId('');
+    setSectorNombre('');
+    setNumeroOrden('');
+
+    setFechaTrabajoInicio(fechaLocalISO());
+    setFechaTrabajoTermino('');
+
+    setHoraDesde('');
+    setHoraHasta('');
+    setHorasTrabajadas(0);
+    setNumTrabajadores(empresa.numTrabajadoresDefecto);
+    setValorHora(empresa.valorHoraDefecto);
+
     setVigenciaDias(empresa.vigenciaCotizacionDias);
 
     setItems([itemVacio()]);
@@ -359,6 +406,33 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
     const cliente = clientes.find((cliente) => cliente.id === id) || null;
 
     setClienteSeleccionado(cliente);
+  }
+
+  function seleccionarSector(id: string) {
+    setSectorId(id);
+
+    const sector = sectores.find((sector) => sector.id === id) || null;
+
+    setSectorNombre(sector?.nombre || '');
+  }
+
+  function calcularHoras(desde: string, hasta: string) {
+    if (!desde || !hasta) {
+      return 0;
+    }
+
+    const [horaD, minD] = desde.split(':').map(Number);
+    const [horaH, minH] = hasta.split(':').map(Number);
+
+    const minutos = horaH * 60 + minH - (horaD * 60 + minD);
+
+    return minutos > 0 ? Math.round((minutos / 60) * 100) / 100 : 0;
+  }
+
+  function cambiarHorario(desde: string, hasta: string) {
+    setHoraDesde(desde);
+    setHoraHasta(hasta);
+    setHorasTrabajadas(calcularHoras(desde, hasta));
   }
 
   function agregarProducto() {
@@ -441,9 +515,19 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
     );
   }, [items]);
 
+  const costoHH = Math.max(
+    0,
+    Number(horasTrabajadas || 0) *
+      Number(numTrabajadores || 0) *
+      Number(valorHora || 0)
+  );
+
   const netoTotal = Math.max(
     0,
-    subtotalProductos + Number(despachoNeto || 0) - Number(descuentoNeto || 0)
+    subtotalProductos +
+      Number(despachoNeto || 0) +
+      costoHH -
+      Number(descuentoNeto || 0)
   );
 
   const iva = Math.round(netoTotal * (ivaPorcentaje / 100));
@@ -452,6 +536,20 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
   function formatoDinero(valor: number) {
     return formatearMonto(valor);
+  }
+
+  function fraseDiasTrabajo() {
+    if (!fechaTrabajoInicio) {
+      return '';
+    }
+
+    if (!fechaTrabajoTermino || fechaTrabajoTermino === fechaTrabajoInicio) {
+      return `el día ${formatoFecha(fechaTrabajoInicio)}`;
+    }
+
+    return `los días ${formatoFecha(fechaTrabajoInicio)} al ${formatoFecha(
+      fechaTrabajoTermino
+    )}`;
   }
 
   function formatoFecha(fechaISO: string) {
@@ -471,6 +569,18 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
   function validarCotizacion() {
     if (!clienteSeleccionado) {
       setError('Debes seleccionar un cliente.');
+
+      return false;
+    }
+
+    if (!sectorId) {
+      setError('Debes seleccionar un sector.');
+
+      return false;
+    }
+
+    if (!fechaTrabajoInicio) {
+      setError('Debes indicar la fecha en que se realizó el trabajo.');
 
       return false;
     }
@@ -517,6 +627,17 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
       cliente_contacto: clienteSeleccionado.contacto,
       cliente_telefono: clienteSeleccionado.telefono,
       cliente_correo: clienteSeleccionado.correo,
+      sector_id: sectorId,
+      sector_nombre: sectorNombre,
+      numero_orden: numeroOrden.trim() || null,
+      fecha_trabajo_inicio: fechaTrabajoInicio || null,
+      fecha_trabajo_termino: fechaTrabajoTermino || null,
+      hora_desde: horaDesde || null,
+      hora_hasta: horaHasta || null,
+      horas_trabajadas: Number(horasTrabajadas || 0),
+      num_trabajadores: Number(numTrabajadores || 0),
+      valor_hora: Number(valorHora || 0),
+      costo_hh: costoHH,
       subtotal_productos_neto: subtotalProductos,
       despacho_neto: Number(despachoNeto || 0),
       descuento_neto: Number(descuentoNeto || 0),
@@ -662,6 +783,19 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
       correo: c.cliente_correo,
     });
+
+    setSectorId(c.sector_id || '');
+    setSectorNombre(c.sector_nombre || '');
+    setNumeroOrden(c.numero_orden || '');
+
+    setFechaTrabajoInicio(c.fecha_trabajo_inicio || '');
+    setFechaTrabajoTermino(c.fecha_trabajo_termino || '');
+
+    setHoraDesde(c.hora_desde ? String(c.hora_desde).slice(0, 5) : '');
+    setHoraHasta(c.hora_hasta ? String(c.hora_hasta).slice(0, 5) : '');
+    setHorasTrabajadas(Number(c.horas_trabajadas || 0));
+    setNumTrabajadores(Number(c.num_trabajadores || 0));
+    setValorHora(Number(c.valor_hora || 0));
 
     setVigenciaDias(
       Number(c.vigencia_dias || empresa.vigenciaCotizacionDias)
@@ -969,7 +1103,11 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
       const alturaExportacion = paginaExportacion.scrollHeight;
 
-      const nombreArchivo = `${numero.trim() || 'Cotizacion'}.pdf`;
+      // Chrome/Edge crean automáticamente subcarpetas dentro de Descargas
+      // cuando el nombre de archivo sugerido incluye "/", por lo que cada
+      // PDF queda guardado en una carpeta por mes sin pedir permisos extra.
+      const carpetaMes = fecha ? fecha.slice(0, 7) : fechaLocalISO().slice(0, 7);
+      const nombreArchivo = `${carpetaMes}/${numero.trim() || 'Cotizacion'}.pdf`;
 
       const opciones = {
         margin: 0,
@@ -1221,6 +1359,30 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
                   </div>
                 </section>
 
+                <section className="quote-section">
+                  <div className="quote-section-title">DATOS DEL TRABAJO</div>
+
+                  <div className="quote-client-grid">
+                    <div>
+                      <small>Sector</small>
+
+                      <strong>{sectorNombre || '—'}</strong>
+                    </div>
+
+                    <div>
+                      <small>N° de Orden</small>
+
+                      <strong>{numeroOrden || '—'}</strong>
+                    </div>
+
+                    <div>
+                      <small>Día(s) trabajado(s)</small>
+
+                      <strong>{fraseDiasTrabajo() || '—'}</strong>
+                    </div>
+                  </div>
+                </section>
+
                 <section className="quote-section quote-products-section">
                   <div className="quote-section-title">PRODUCTOS</div>
 
@@ -1274,7 +1436,7 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
                 <section className="quote-bottom-section">
                   <div className="quote-observations-box">
-                    <div className="quote-section-title">OBSERVACIONES</div>
+                    <div className="quote-section-title">DESCRIPCIÓN DEL TRABAJO</div>
 
                     <div className="quote-observations-content">
                       {observaciones ? <p>{observaciones}</p> : <span>—</span>}
@@ -1288,9 +1450,17 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
                       <strong>{formatoDinero(subtotalProductos)}</strong>
                     </div>
 
+                    {costoHH > 0 && (
+                      <div>
+                        <span>Mano de obra (costo HH)</span>
+
+                        <strong>{formatoDinero(costoHH)}</strong>
+                      </div>
+                    )}
+
                     {despachoNeto > 0 && (
                       <div>
-                        <span>Despacho neto</span>
+                        <span>Costo traslado</span>
 
                         <strong>{formatoDinero(despachoNeto)}</strong>
                       </div>
@@ -1457,6 +1627,53 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
                 }
               />
             </label>
+
+            <label>
+              Sector *
+              <select
+                value={sectorId}
+                onChange={(event) => seleccionarSector(event.target.value)}
+              >
+                <option value="">Seleccionar sector</option>
+
+                {sectores.map((sector) => (
+                  <option key={sector.id} value={sector.id}>
+                    {sector.nombre}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              N° de Orden
+              <input
+                value={numeroOrden}
+                onChange={(event) => setNumeroOrden(event.target.value)}
+                placeholder="N° de orden de compra del cliente"
+              />
+            </label>
+
+            <label>
+              Día de inicio del trabajo *
+              <input
+                type="date"
+                value={fechaTrabajoInicio}
+                onChange={(event) =>
+                  setFechaTrabajoInicio(event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Día de término (si duró más de un día)
+              <input
+                type="date"
+                value={fechaTrabajoTermino}
+                onChange={(event) =>
+                  setFechaTrabajoTermino(event.target.value)
+                }
+              />
+            </label>
           </div>
 
           {clienteSeleccionado && (
@@ -1468,6 +1685,74 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
               <span>Dirección: {clienteSeleccionado.direccion || '—'}</span>
             </div>
           )}
+        </div>
+
+        <div className="form-card">
+          <h2>Mano de obra</h2>
+
+          <div className="form-grid">
+            <label>
+              Hora desde
+              <input
+                type="time"
+                value={horaDesde}
+                onChange={(event) =>
+                  cambiarHorario(event.target.value, horaHasta)
+                }
+              />
+            </label>
+
+            <label>
+              Hora hasta
+              <input
+                type="time"
+                value={horaHasta}
+                onChange={(event) =>
+                  cambiarHorario(horaDesde, event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Horas trabajadas
+              <input
+                type="number"
+                min="0"
+                step="0.25"
+                value={horasTrabajadas}
+                onChange={(event) =>
+                  setHorasTrabajadas(Number(event.target.value))
+                }
+              />
+            </label>
+
+            <label>
+              N° de trabajadores
+              <input
+                type="number"
+                min="0"
+                value={numTrabajadores}
+                onChange={(event) =>
+                  setNumTrabajadores(Number(event.target.value))
+                }
+              />
+            </label>
+
+            <label>
+              Valor hora
+              <input
+                type="number"
+                min="0"
+                value={valorHora}
+                onChange={(event) => setValorHora(Number(event.target.value))}
+              />
+            </label>
+
+            <label>
+              Costo HH (calculado)
+              <input value={formatoDinero(costoHH)} disabled />
+            </label>
+          </div>
         </div>
 
         {items.map((item, index) => (
@@ -1628,7 +1913,7 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
           <div className="form-grid">
             <label>
-              Despacho neto
+              Costo traslado
               <input
                 type="number"
                 min="0"
@@ -1669,7 +1954,13 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
             </div>
 
             <div>
-              <span>Despacho</span>
+              <span>Mano de obra (costo HH)</span>
+
+              <strong>{formatoDinero(costoHH)}</strong>
+            </div>
+
+            <div>
+              <span>Costo traslado</span>
 
               <strong>{formatoDinero(despachoNeto)}</strong>
             </div>
