@@ -1,0 +1,28 @@
+NOTA: registro histórico de la validación de empaquetado hecha para el
+cliente original (Ingeniería y Construcción La Unión SpA). Se conserva como
+referencia; no forma parte de la documentación de la plantilla genérica.
+
+VALIDACIÓN DEL PAQUETE — LA UNIÓN
+=================================
+
+OK  - Sintaxis TypeScript/TSX validada por transpileModule.
+OK  - Chequeo estático adicional con shims: sin errores detectados.
+OK  - Imports relativos: todos resuelven a archivos existentes.
+OK  - No existen App_1.tsx ni Cotizaciones_1.tsx.
+OK  - No existen index.css/react.svg/vite.svg/hero.png del starter.
+OK  - No existe archivo .env real dentro del paquete.
+OK  - No se detectaron tokens JWT/Supabase secret hardcodeados.
+OK  - Cotizaciones ya no cargan html2pdf desde CDN dinámicamente.
+OK  - Migraciones y Edge Function incluidas.
+
+LIMITACIÓN DEL ENTORNO DE REVISIÓN
+----------------------------------
+Este entorno no tuvo acceso al registro npm, por lo que no fue posible ejecutar
+una instalación limpia real de dependencias ni `npm run build`/`npm run lint`
+con los paquetes del proyecto. Por esa razón no se incluye un package-lock.json
+stale. En un computador con Internet, el primer paso debe ser `npm install`,
+seguido de `npm run lint` y `npm run build`.
+
+Tampoco se recibió un dump/esquema SQL ni las políticas actuales de la base de
+Supabase. Las migraciones deben probarse primero en staging/copia antes de
+aplicarlas a producción, tal como se explica en README.md y SECURITY.md.

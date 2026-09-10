@@ -1,0 +1,2661 @@
+/* ============================================================
+   VARIABLES GENERALES
+   ============================================================ */
+
+:root {
+  --brand-green: #158a47;
+  --brand-green-dark: #08783b;
+  --brand-green-light: #eaf5ef;
+  --brand-green-soft: #f1f8f4;
+
+  --brand-dark: #17202a;
+  --brand-ink: #111c28;
+  --brand-text: #273345;
+  --brand-muted: #657183;
+
+  --brand-line: #d9e0e4;
+
+  --page-bg: #f5f6f8;
+  --white: #ffffff;
+}
+
+/* ============================================================
+       RESET
+       ============================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+
+  font-family: Inter, Arial, Helvetica, sans-serif;
+
+  background: var(--page-bg);
+  color: #18202a;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+/* ============================================================
+       LOGIN
+       ============================================================ */
+
+.login-page {
+  min-height: 100vh;
+
+  display: grid;
+  place-items: center;
+
+  padding: 24px;
+
+  background: #f3f5f7;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 430px;
+
+  padding: 44px;
+
+  background: white;
+
+  border: 1px solid #e3e6ea;
+  border-radius: 16px;
+
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.07);
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 16px;
+
+  margin-bottom: 20px;
+}
+
+.brand-mark {
+  width: 52px;
+  height: 52px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  background: var(--brand-green);
+
+  color: white;
+
+  border-radius: 10px;
+
+  font-weight: 800;
+}
+
+.login-card h1 {
+  margin: 7px 0 12px;
+
+  font-size: 29px;
+
+  line-height: 1.15;
+}
+
+.login-description {
+  margin-bottom: 30px;
+
+  color: #69737e;
+}
+
+.login-label {
+  display: block;
+
+  margin-bottom: 18px;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.login-card input {
+  width: 100%;
+
+  margin-top: 8px;
+
+  padding: 13px 14px;
+
+  border: 1px solid #ccd2d8;
+  border-radius: 8px;
+
+  outline: none;
+}
+
+.login-card input:focus {
+  border-color: var(--brand-green);
+}
+
+.login-button {
+  width: 100%;
+
+  padding: 14px;
+
+  border: 0;
+  border-radius: 8px;
+
+  background: var(--brand-green);
+
+  color: white;
+
+  cursor: pointer;
+
+  font-weight: 700;
+}
+
+.login-button:hover {
+  background: var(--brand-green-dark);
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+
+  cursor: default;
+}
+
+/* ============================================================
+       MENSAJES
+       ============================================================ */
+
+.error-message {
+  padding: 12px;
+
+  margin-bottom: 16px;
+
+  border-radius: 8px;
+
+  background: #fff0f0;
+
+  color: #a32626;
+
+  font-size: 14px;
+}
+
+/* ============================================================
+       APP
+       ============================================================ */
+
+.app {
+  min-height: 100vh;
+
+  display: flex;
+}
+
+/* ============================================================
+       SIDEBAR
+       ============================================================ */
+
+aside {
+  width: 250px;
+  min-height: 100vh;
+
+  position: sticky;
+  top: 0;
+
+  align-self: flex-start;
+
+  padding: 28px 20px;
+
+  background: var(--brand-dark);
+
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+
+  gap: 11px;
+
+  margin-bottom: 28px;
+}
+
+.sidebar-logo-symbol {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 8px;
+
+  background: var(--brand-green);
+
+  color: white;
+
+  font-weight: 800;
+}
+
+.sidebar-brand h2 {
+  margin: 3px 0 0;
+
+  font-size: 20px;
+}
+
+.sidebar-small {
+  margin: 0;
+
+  color: #9da8b3;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 1.1px;
+}
+
+nav {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+nav button {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 11px 12px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: #cbd2d8;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+nav button:hover,
+nav button.active {
+  background: #273440;
+
+  color: white;
+}
+
+nav button.active {
+  box-shadow: inset 3px 0 var(--brand-green);
+}
+
+.nav-icon {
+  width: 20px;
+
+  display: inline-flex;
+  justify-content: center;
+
+  font-size: 15px;
+}
+
+.nav-divider {
+  height: 1px;
+
+  margin: 12px 0;
+
+  background: #34414d;
+}
+
+.nav-section-title {
+  margin: 5px 12px 4px;
+
+  color: #788490;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 1.2px;
+}
+
+.user-box {
+  margin-top: auto;
+
+  padding-top: 20px;
+
+  border-top: 1px solid #34414d;
+
+  display: grid;
+
+  grid-template-columns:
+    38px
+    minmax(0, 1fr)
+    34px;
+
+  gap: 10px;
+
+  align-items: center;
+}
+
+.user-avatar {
+  width: 38px;
+  height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  background: var(--brand-green);
+
+  color: white;
+
+  font-weight: 800;
+}
+
+.user-info {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.user-info strong {
+  overflow: hidden;
+
+  color: white;
+
+  font-size: 13px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-info span {
+  color: #9da8b3;
+
+  font-size: 11px;
+}
+
+.logout-button {
+  width: 34px;
+  height: 34px;
+
+  margin: 0 !important;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0 !important;
+
+  border: 1px solid #46535e !important;
+  border-radius: 7px;
+
+  background: transparent;
+
+  color: white;
+
+  cursor: pointer;
+}
+
+/* ============================================================
+       CONTENIDO
+       ============================================================ */
+
+.content {
+  flex: 1;
+
+  min-width: 0;
+
+  padding: 42px;
+}
+
+.content h1 {
+  margin-top: 5px;
+
+  font-size: 34px;
+}
+
+.eyebrow {
+  margin: 0;
+
+  color: #66717e;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  letter-spacing: 1.5px;
+}
+
+.module-header {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 30px;
+
+  margin-bottom: 28px;
+}
+
+.module-header h1 {
+  margin: 5px 0;
+}
+
+.module-description {
+  margin: 0;
+
+  color: #69737e;
+}
+
+/* ============================================================
+       BOTONES
+       ============================================================ */
+
+.primary-button,
+.secondary-button {
+  padding: 11px 16px;
+
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  font-weight: 700;
+}
+
+.primary-button {
+  border: 1px solid var(--brand-green);
+
+  background: var(--brand-green);
+
+  color: white;
+}
+
+.primary-button:hover {
+  background: var(--brand-green-dark);
+}
+
+.secondary-button {
+  border: 1px solid #ccd2d8;
+
+  background: white;
+
+  color: #18202a;
+}
+
+.secondary-button:hover {
+  background: #f4f6f7;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  opacity: 0.6;
+
+  cursor: default;
+}
+
+.danger-text {
+  color: #a32626;
+}
+
+/* ============================================================
+       DASHBOARD
+       ============================================================ */
+
+.dashboard-header {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: flex-start;
+
+  gap: 30px;
+
+  margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+  margin: 5px 0;
+}
+
+.dashboard-cards {
+  display: grid;
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+.dashboard-card {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 20px;
+
+  border: 1px solid #e0e4e8;
+  border-radius: 11px;
+
+  background: white;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+}
+
+.dashboard-card-icon {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 9px;
+
+  background: var(--brand-green-soft);
+
+  color: var(--brand-green);
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.dashboard-card > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.dashboard-card span {
+  color: #69737e;
+
+  font-size: 11px;
+}
+
+.dashboard-card strong {
+  color: var(--brand-ink);
+
+  font-size: 15px;
+}
+
+.dashboard-card small {
+  color: #7b8490;
+
+  font-size: 11px;
+}
+
+.dashboard-admin-section {
+  margin-top: 42px;
+}
+
+.section-heading {
+  margin-bottom: 18px;
+}
+
+.section-heading h2 {
+  margin: 5px 0 0;
+}
+
+.empty-module-card {
+  padding: 65px 30px;
+
+  border: 1px solid #e0e4e8;
+  border-radius: 12px;
+
+  background: white;
+
+  text-align: center;
+}
+
+.empty-module-icon {
+  width: 56px;
+  height: 56px;
+
+  margin: 0 auto 15px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 12px;
+
+  background: var(--brand-green-soft);
+
+  color: var(--brand-green);
+
+  font-weight: 800;
+}
+
+.empty-module-card h2 {
+  margin: 0 0 7px;
+}
+
+.empty-module-card p {
+  margin: 0;
+
+  color: #69737e;
+}
+
+/* ============================================================
+       BUSCADOR
+       ============================================================ */
+
+.toolbar {
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 450px;
+
+  padding: 12px 14px;
+
+  border: 1px solid #ccd2d8;
+  border-radius: 8px;
+
+  background: white;
+
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: var(--brand-green);
+}
+
+/* ============================================================
+       TARJETAS Y FORMULARIOS
+       ============================================================ */
+
+.form-card,
+.table-card {
+  background: white;
+
+  border: 1px solid #e0e4e8;
+
+  border-radius: 10px;
+}
+
+.form-card {
+  margin-bottom: 25px;
+
+  padding: 25px;
+}
+
+.form-title {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: flex-start;
+
+  margin-bottom: 20px;
+}
+
+.form-title h2 {
+  margin: 3px 0;
+}
+
+.close-button {
+  border: 0;
+
+  background: transparent;
+
+  font-size: 28px;
+
+  cursor: pointer;
+}
+
+.form-grid {
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap: 18px;
+}
+
+.form-grid label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-grid input,
+.form-grid textarea,
+.form-grid select {
+  width: 100%;
+
+  margin-top: 7px;
+
+  padding: 11px 12px;
+
+  border: 1px solid #ccd2d8;
+  border-radius: 7px;
+
+  background: white;
+
+  outline: none;
+}
+
+.form-grid input:focus,
+.form-grid textarea:focus,
+.form-grid select:focus {
+  border-color: var(--brand-green);
+}
+
+.form-grid textarea {
+  min-height: 90px;
+
+  resize: vertical;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 22px;
+}
+
+/* ============================================================
+       TABLAS GENERALES
+       ============================================================ */
+
+.table-card {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 15px 17px;
+
+  border-bottom: 1px solid #e8ebee;
+
+  text-align: left;
+}
+
+th {
+  color: #69737e;
+
+  font-size: 12px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.5px;
+}
+
+.table-action {
+  padding: 3px 5px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--brand-green-dark);
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.empty-state {
+  padding: 55px 30px;
+
+  text-align: center;
+}
+
+.empty-state h3 {
+  margin-bottom: 5px;
+}
+
+.empty-state p {
+  color: #69737e;
+}
+
+/* ============================================================
+       PRODUCTOS
+       ============================================================ */
+
+.product-image-preview {
+  width: 220px;
+  height: 180px;
+
+  overflow: hidden;
+
+  border: 1px solid #e0e4e8;
+  border-radius: 10px;
+
+  background: #f5f6f8;
+}
+
+.product-image-preview img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+}
+
+.product-table-image {
+  width: 75px;
+  height: 65px;
+
+  object-fit: contain;
+
+  border: 1px solid #e0e4e8;
+  border-radius: 6px;
+
+  background: white;
+}
+
+.small-muted {
+  margin-top: 4px;
+
+  color: #7a8490;
+
+  font-size: 12px;
+}
+
+.image-section {
+  margin-top: 10px;
+}
+
+.image-section h3 {
+  margin: 0 0 5px;
+}
+
+.upload-area {
+  padding: 16px;
+
+  border: 1px dashed #bcc4cc;
+  border-radius: 8px;
+
+  background: #f8f9fa;
+}
+
+.upload-label {
+  display: block;
+
+  margin-bottom: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.upload-area input[type='file'] {
+  width: 100%;
+}
+
+/* ============================================================
+       COTIZACIONES — EDITOR
+       ============================================================ */
+
+.quote-toolbar {
+  display: flex;
+
+  gap: 12px;
+
+  margin-bottom: 20px;
+}
+
+.quote-toolbar select {
+  padding: 11px 12px;
+
+  border: 1px solid #ccd2d8;
+  border-radius: 8px;
+
+  background: white;
+}
+
+.selected-client-card {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+
+  margin-top: 22px;
+
+  padding: 16px;
+
+  border-radius: 8px;
+
+  background: #f5f6f8;
+}
+
+.quote-editor-item {
+  margin-bottom: 18px;
+}
+
+.quote-editor-image {
+  display: block;
+
+  width: 220px;
+  height: 170px;
+
+  padding: 5px;
+
+  object-fit: contain;
+
+  border: 1px solid #e0e4e8;
+  border-radius: 8px;
+
+  background: white;
+}
+
+.quote-item-summary {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 25px;
+
+  margin-top: 20px;
+
+  padding-top: 16px;
+
+  border-top: 1px solid #e2e7ea;
+}
+
+.add-product-button {
+  margin-bottom: 25px;
+}
+
+.quote-calculation {
+  width: 100%;
+  max-width: 430px;
+
+  margin: 25px 0 25px auto;
+}
+
+.quote-calculation > div {
+  display: flex;
+
+  justify-content: space-between;
+
+  padding: 7px 0;
+}
+
+.quote-calculation-total {
+  margin-top: 8px;
+
+  padding-top: 15px !important;
+
+  border-top: 2px solid var(--brand-green);
+
+  color: var(--brand-green-dark);
+
+  font-size: 20px;
+}
+
+.quote-main-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+}
+
+.quote-status-actions {
+  display: flex;
+
+  justify-content: flex-end;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 18px;
+
+  padding-top: 18px;
+
+  border-top: 1px solid #e0e4e8;
+}
+
+/* ============================================================
+       ESTADOS COTIZACIÓN
+       ============================================================ */
+
+.quote-status {
+  display: inline-block;
+
+  padding: 5px 10px;
+
+  border-radius: 20px;
+
+  background: #edf0f2;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.quote-status-aceptada {
+  color: #10673a;
+
+  background: #e0f2e7;
+}
+
+.quote-status-rechazada {
+  color: #9a2e2e;
+
+  background: #fbe2e2;
+}
+
+.quote-status-modificada {
+  color: #71570b;
+
+  background: #fff0c8;
+}
+
+/* ============================================================
+       COTIZACIÓN — PREVIEW
+  
+       La preview NO reacomoda columnas según el navegador.
+       Siempre usa la misma hoja Carta de 816 px que se exporta a PDF
+       y, si la ventana es más angosta, se reduce proporcionalmente.
+       ============================================================ */
+
+.quote-preview-wrapper {
+  width: 100%;
+  min-width: 0;
+}
+
+.quote-preview-actions {
+  width: 100%;
+  max-width: 816px;
+
+  margin: 0 auto 20px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.quote-preview-viewport {
+  width: 100%;
+  min-width: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  padding: 6px 0 28px;
+
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+.quote-preview-holder {
+  position: relative;
+
+  flex: 0 0 auto;
+
+  min-width: 0;
+}
+
+.quote-preview-source {
+  transform-origin: top left;
+
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Base genérica. En preview y PDF se usa además .pdf-export. */
+.quote-document {
+  width: 100%;
+  max-width: 1050px;
+
+  min-height: 0;
+
+  margin: 0 auto;
+
+  padding: 42px 42px 32px;
+
+  background: white;
+
+  color: var(--brand-text);
+
+  font-family: Inter, Arial, Helvetica, sans-serif;
+
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* ============================================================
+       HEADER COTIZACIÓN
+       ============================================================ */
+
+.quote-brand-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 35px;
+
+  padding-bottom: 22px;
+}
+
+.quote-brand-left {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 20px;
+}
+
+.quote-logo-frame {
+  width: 195px;
+  height: 125px;
+
+  flex-shrink: 0;
+
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quote-brand-logo {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+
+  display: block;
+  margin: 0 auto;
+
+  object-fit: contain;
+  transform: scale(1.22);
+  transform-origin: center;
+}
+
+.quote-brand-name {
+  display: flex;
+  flex-direction: column;
+
+  line-height: 1.05;
+}
+
+.quote-brand-name span {
+  color: var(--brand-ink);
+
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.quote-brand-name strong {
+  margin-top: 4px;
+
+  color: var(--brand-green);
+
+  font-size: 39px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+.quote-company-contact {
+  min-width: 300px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 9px;
+
+  font-size: 14px;
+}
+
+.quote-company-contact > div {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+}
+
+.quote-company-contact strong {
+  color: var(--brand-ink);
+}
+
+.quote-contact-icon {
+  width: 19px;
+
+  color: var(--brand-green);
+
+  font-size: 16px;
+  font-weight: 800;
+
+  text-align: center;
+}
+
+.quote-green-line {
+  width: 100%;
+  height: 5px;
+
+  margin-bottom: 27px;
+
+  border-radius: 10px;
+
+  background: var(--brand-green);
+}
+
+/* ============================================================
+       TÍTULO / META
+       ============================================================ */
+
+.quote-heading {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    400px;
+
+  gap: 30px;
+
+  align-items: center;
+
+  margin-bottom: 25px;
+}
+
+.quote-heading-title h1 {
+  margin: 0;
+
+  color: var(--brand-ink);
+
+  font-size: 52px;
+  font-weight: 900;
+
+  line-height: 1;
+
+  letter-spacing: -1px;
+}
+
+.quote-number {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 10px;
+
+  font-size: 28px;
+}
+
+.quote-number span {
+  color: var(--brand-text);
+}
+
+.quote-number strong {
+  color: var(--brand-green);
+
+  font-weight: 800;
+}
+
+.quote-meta-card {
+  padding: 18px 20px;
+
+  border-radius: 8px;
+
+  background: linear-gradient(90deg, #f0f7f3 0%, #f5f9f7 100%);
+}
+
+.quote-meta-card > div {
+  min-height: 37px;
+
+  display: grid;
+
+  grid-template-columns:
+    24px
+    90px
+    1fr;
+
+  gap: 9px;
+
+  align-items: center;
+}
+
+.quote-meta-icon {
+  color: var(--brand-green);
+
+  font-size: 19px;
+}
+
+.quote-meta-card strong {
+  color: var(--brand-ink);
+}
+
+.quote-state-badge {
+  width: fit-content;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 6px 14px;
+
+  border-radius: 30px;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.quote-state-borrador {
+  background: #e8edf1;
+}
+
+.quote-state-modificada {
+  background: #ffe4aa;
+}
+
+.quote-state-aceptada {
+  color: #076936;
+
+  background: #dcefe4;
+}
+
+.quote-state-rechazada {
+  color: #8b2424;
+
+  background: #f9dddd;
+}
+
+/* ============================================================
+       SECCIONES COTIZACIÓN
+       ============================================================ */
+
+.quote-section {
+  margin-bottom: 24px;
+}
+
+.quote-section-title {
+  width: 100%;
+
+  padding: 8px 14px;
+
+  border-radius: 5px;
+
+  color: var(--brand-green-dark);
+
+  background: linear-gradient(90deg, #e7f2ec, #eef7f2);
+
+  font-size: 15px;
+  font-weight: 800;
+
+  letter-spacing: 0.2px;
+}
+
+/* ============================================================
+       CLIENTE
+       ============================================================ */
+
+.quote-client-grid {
+  display: grid;
+
+  grid-template-columns:
+    1.4fr
+    0.9fr
+    1.5fr;
+
+  gap: 0;
+
+  padding: 15px 15px 6px;
+}
+
+.quote-client-grid > div {
+  min-height: 52px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+
+  padding: 0 20px;
+}
+
+.quote-client-grid > div:first-child {
+  padding-left: 0;
+}
+
+.quote-client-grid > div:not(:last-child) {
+  border-right: 1px solid #ccd6dc;
+}
+
+.quote-client-grid small {
+  color: var(--brand-text);
+
+  font-size: 13px;
+}
+
+.quote-client-grid strong {
+  color: var(--brand-ink);
+
+  font-size: 16px;
+}
+
+/* ============================================================
+       PRODUCTOS COTIZACIÓN
+       ============================================================ */
+
+.quote-products-section {
+  margin-bottom: 28px;
+}
+
+.quote-products-table {
+  margin-top: 10px;
+}
+
+.quote-products-head,
+.quote-product-line {
+  display: grid;
+
+  /*
+        IMAGEN MÁS GRANDE.
+        Descripción conserva el espacio principal.
+        Cantidad y valores se mantienen compactos.
+      */
+
+  grid-template-columns:
+    175px
+    minmax(260px, 1fr)
+    60px
+    105px
+    105px;
+}
+
+.quote-products-head {
+  min-height: 40px;
+
+  align-items: center;
+
+  background: #e4f1e9;
+
+  color: var(--brand-ink);
+
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.quote-products-head > div {
+  padding: 0 10px;
+
+  text-align: center;
+}
+
+.quote-products-head > div:nth-child(2) {
+  text-align: left;
+}
+
+.quote-product-line {
+  min-height: 130px;
+
+  align-items: center;
+
+  border-bottom: 1px solid #d8e0e4;
+
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.quote-product-line > div {
+  padding: 10px;
+}
+
+.quote-product-img-cell {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.quote-product-img-cell img {
+  width: 150px;
+  height: 110px;
+
+  display: block;
+
+  object-fit: contain;
+}
+
+.quote-product-img-cell span {
+  color: #a3acb5;
+}
+
+.quote-product-info {
+  min-width: 0;
+
+  align-self: stretch;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+}
+
+.quote-product-info strong {
+  margin-bottom: 5px;
+
+  color: var(--brand-ink);
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.quote-product-info p {
+  margin: 0;
+
+  color: #334056;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+
+  white-space: pre-wrap;
+
+  overflow-wrap: anywhere;
+}
+
+.quote-product-qty {
+  color: var(--brand-ink);
+
+  font-size: 14px;
+
+  text-align: center;
+}
+
+.quote-product-money {
+  color: var(--brand-ink);
+
+  font-size: 14px;
+
+  text-align: right;
+
+  white-space: nowrap;
+}
+
+/* ============================================================
+       OBSERVACIONES Y TOTALES
+       ============================================================ */
+
+.quote-bottom-section {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.25fr)
+    390px;
+
+  gap: 38px;
+
+  align-items: start;
+
+  margin-top: 26px;
+
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.quote-observations-content {
+  min-height: 105px;
+
+  margin-top: 10px;
+
+  padding: 18px;
+
+  border-radius: 5px;
+
+  background: #f5f7f8;
+}
+
+.quote-observations-content p {
+  margin: 0;
+
+  color: var(--brand-text);
+
+  font-size: 12px;
+
+  line-height: 1.5;
+
+  white-space: pre-wrap;
+}
+
+.quote-observations-content span {
+  color: var(--brand-muted);
+}
+
+.quote-summary {
+  padding-top: 5px;
+}
+
+.quote-summary > div:not(.quote-summary-divider) {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 25px;
+
+  padding: 5px 10px;
+
+  font-size: 14px;
+}
+
+.quote-summary strong {
+  color: var(--brand-ink);
+}
+
+.quote-summary-divider {
+  height: 1px;
+
+  margin: 8px 0;
+
+  background: var(--brand-green);
+}
+
+.quote-summary-net {
+  color: var(--brand-ink);
+
+  font-size: 16px !important;
+  font-weight: 700;
+}
+
+.quote-summary-total {
+  margin-top: 9px;
+
+  padding: 13px 14px !important;
+
+  border-radius: 4px;
+
+  background: linear-gradient(
+    90deg,
+    var(--brand-green-dark),
+    var(--brand-green)
+  );
+
+  color: white !important;
+
+  font-size: 21px !important;
+  font-weight: 800;
+}
+
+.quote-summary-total span,
+.quote-summary-total strong {
+  color: white;
+}
+
+.quote-summary-total strong {
+  font-size: 24px;
+}
+
+/* ============================================================
+       FOOTER PDF
+       ============================================================ */
+
+.quote-footer {
+  display: flex;
+
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  margin-top: 60px;
+
+  padding-top: 12px;
+}
+
+.quote-footer-message {
+  display: flex;
+
+  align-items: stretch;
+
+  gap: 14px;
+}
+
+.quote-footer-green-bar {
+  width: 5px;
+
+  min-height: 46px;
+
+  background: var(--brand-green);
+}
+
+.quote-footer-message p {
+  margin: 3px 0;
+
+  color: #435064;
+
+  font-size: 11px;
+}
+
+.quote-footer-message strong {
+  color: var(--brand-ink);
+}
+
+.quote-footer-number {
+  display: flex;
+
+  gap: 9px;
+
+  color: #4c586b;
+
+  font-size: 10px;
+
+  white-space: nowrap;
+}
+
+/* ============================================================
+       EXPORTACIÓN HTML2PDF — CARTA CON LÍMITES HORIZONTALES FIJOS
+  
+       Carta a 96 dpi = 816 px de ancho.
+  
+       IMPORTANTE:
+       - .pdf-letter-source es la hoja que realmente captura html2pdf.
+       - Tiene ancho fijo de 816 px y padding horizontal de 32 px.
+       - .quote-document.pdf-export ocupa solamente el ancho INTERIOR.
+       - Ningún bloque puede superar el 100% de ese ancho interior.
+       - Si hay muchos productos, el documento puede crecer verticalmente y
+         generar varias páginas; horizontalmente siempre queda contenido.
+       ============================================================ */
+
+/*
+    ESTA ES LA VERDADERA HOJA FUENTE.
+    El padding pertenece a la hoja, no a .quote-document.
+    Así html2canvas nunca puede perder el margen izquierdo del documento.
+  */
+.pdf-letter-source {
+  width: 816px !important;
+  min-width: 816px !important;
+  max-width: 816px !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+
+  margin: 0 !important;
+  padding: 28px 32px 24px !important;
+
+  box-sizing: border-box !important;
+
+  background: #ffffff !important;
+  color: var(--brand-text);
+
+  overflow-x: hidden !important;
+  overflow-y: visible !important;
+
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Durante la captura se elimina únicamente la escala de la vista previa. */
+.pdf-letter-source.pdf-capturing {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.quote-document.pdf-export {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  height: auto !important;
+  min-height: 0 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  box-sizing: border-box !important;
+
+  background: #ffffff !important;
+  box-shadow: none !important;
+
+  overflow: visible !important;
+}
+
+/* Todos los descendientes respetan el ancho interior de la hoja. */
+.quote-document.pdf-export,
+.quote-document.pdf-export * {
+  box-sizing: border-box !important;
+}
+
+.quote-document.pdf-export .quote-brand-header,
+.quote-document.pdf-export .quote-green-line,
+.quote-document.pdf-export .quote-heading,
+.quote-document.pdf-export .quote-section,
+.quote-document.pdf-export .quote-client-grid,
+.quote-document.pdf-export .quote-products-table,
+.quote-document.pdf-export .quote-products-head,
+.quote-document.pdf-export .quote-product-line,
+.quote-document.pdf-export .quote-bottom-section,
+.quote-document.pdf-export .quote-footer {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* ============================================================
+       HEADER PDF
+       ============================================================ */
+
+.quote-document.pdf-export .quote-brand-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 225px;
+  align-items: center;
+
+  gap: 16px;
+  padding-bottom: 13px;
+}
+
+.quote-document.pdf-export .quote-brand-left {
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: center;
+
+  gap: 10px;
+}
+
+.quote-document.pdf-export .quote-logo-frame {
+  width: 150px;
+  height: 98px;
+
+  max-width: 150px;
+
+  overflow: hidden;
+}
+
+.quote-document.pdf-export .quote-brand-logo {
+  width: auto;
+  height: 100%;
+  max-width: 100%;
+
+  display: block;
+  margin: 0 auto;
+
+  object-fit: contain;
+  transform: scale(1.18);
+}
+
+.quote-document.pdf-export .quote-brand-name {
+  min-width: 0;
+}
+
+.quote-document.pdf-export .quote-brand-name span {
+  font-size: 13px;
+}
+
+.quote-document.pdf-export .quote-brand-name strong {
+  max-width: 100%;
+
+  font-size: 25px;
+  line-height: 1.05;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.quote-document.pdf-export .quote-company-contact {
+  width: 225px;
+  min-width: 0;
+  max-width: 225px;
+
+  gap: 6px;
+
+  font-size: 10.5px;
+}
+
+.quote-document.pdf-export .quote-company-contact > div {
+  min-width: 0;
+
+  gap: 6px;
+}
+
+.quote-document.pdf-export .quote-company-contact > div > span:last-child {
+  min-width: 0;
+
+  overflow-wrap: anywhere;
+}
+
+.quote-document.pdf-export .quote-contact-icon {
+  width: 15px;
+  flex: 0 0 15px;
+
+  font-size: 12px;
+}
+
+.quote-document.pdf-export .quote-green-line {
+  height: 4px;
+
+  margin-bottom: 17px;
+}
+
+/* ============================================================
+       TÍTULO / FECHA
+       ============================================================ */
+
+.quote-document.pdf-export .quote-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  align-items: center;
+
+  gap: 17px;
+  margin-bottom: 17px;
+}
+
+.quote-document.pdf-export .quote-heading-title {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.quote-document.pdf-export .quote-heading-title h1 {
+  max-width: 100%;
+
+  margin: 0;
+
+  font-size: 37px;
+  line-height: 1;
+  letter-spacing: -0.7px;
+
+  overflow-wrap: anywhere;
+}
+
+.quote-document.pdf-export .quote-number {
+  max-width: 100%;
+
+  gap: 8px;
+  margin-top: 7px;
+
+  font-size: 19px;
+
+  flex-wrap: wrap;
+}
+
+.quote-document.pdf-export .quote-number strong {
+  overflow-wrap: anywhere;
+}
+
+.quote-document.pdf-export .quote-meta-card {
+  width: 290px;
+  max-width: 100%;
+
+  padding: 11px 12px;
+}
+
+.quote-document.pdf-export .quote-meta-card > div {
+  min-height: 27px;
+  min-width: 0;
+
+  grid-template-columns: 17px 64px minmax(0, 1fr);
+
+  gap: 6px;
+
+  font-size: 10.5px;
+}
+
+.quote-document.pdf-export .quote-meta-card > div > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.quote-document.pdf-export .quote-meta-icon {
+  font-size: 13px;
+}
+
+/* ============================================================
+       SECCIONES / CLIENTE
+       ============================================================ */
+
+.quote-document.pdf-export .quote-section {
+  margin-bottom: 16px;
+}
+
+.quote-document.pdf-export .quote-section-title {
+  width: 100% !important;
+  max-width: 100% !important;
+
+  padding: 6px 10px;
+
+  font-size: 12px;
+}
+
+.quote-document.pdf-export .quote-client-grid {
+  grid-template-columns: 1.35fr 0.8fr 1.45fr;
+
+  padding: 10px 8px 4px;
+}
+
+.quote-document.pdf-export .quote-client-grid > div {
+  min-width: 0;
+  min-height: 40px;
+
+  gap: 2px;
+  padding: 0 11px;
+}
+
+.quote-document.pdf-export .quote-client-grid > div:first-child {
+  padding-left: 0;
+}
+
+.quote-document.pdf-export .quote-client-grid small {
+  font-size: 9.5px;
+
+  overflow-wrap: anywhere;
+}
+
+.quote-document.pdf-export .quote-client-grid strong {
+  max-width: 100%;
+
+  font-size: 11.5px;
+
+  overflow-wrap: anywhere;
+}
+
+/* ============================================================
+       PRODUCTOS PDF
+  
+       Ancho útil: 816 - 64 px de margen = 752 px.
+       Columnas fijas: 178 + 40 + 86 + 86 = 390 px.
+       La descripción recibe todo el espacio restante (~362 px).
+       ============================================================ */
+
+.quote-document.pdf-export .quote-products-section {
+  margin-bottom: 18px;
+}
+
+.quote-document.pdf-export .quote-products-table {
+  margin-top: 7px;
+
+  overflow: visible;
+}
+
+.quote-document.pdf-export .quote-products-head,
+.quote-document.pdf-export .quote-product-line {
+  display: grid;
+
+  grid-template-columns:
+    178px
+    minmax(0, 1fr)
+    40px
+    86px
+    86px;
+}
+
+.quote-document.pdf-export .quote-products-head {
+  min-height: 31px;
+
+  align-items: center;
+
+  font-size: 9.5px;
+}
+
+.quote-document.pdf-export .quote-products-head > div {
+  min-width: 0;
+
+  padding: 0 4px;
+
+  overflow-wrap: anywhere;
+}
+
+.quote-document.pdf-export .quote-product-line {
+  min-height: 136px;
+
+  align-items: center;
+
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.quote-document.pdf-export .quote-product-line > div {
+  min-width: 0;
+
+  padding: 6px 4px;
+}
+
+/* Imagen un poco más grande, como solicitaste. */
+.quote-document.pdf-export .quote-product-img-cell img {
+  width: 168px;
+  height: 124px;
+
+  max-width: 168px;
+  max-height: 124px;
+
+  display: block;
+
+  object-fit: contain;
+}
+
+.quote-document.pdf-export .quote-product-info {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.quote-document.pdf-export .quote-product-info strong {
+  max-width: 100%;
+
+  margin-bottom: 4px;
+
+  font-size: 10.5px;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.quote-document.pdf-export .quote-product-info p {
+  max-width: 100%;
+
+  font-size: 9px;
+  line-height: 1.3;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.quote-document.pdf-export .quote-product-qty,
+.quote-document.pdf-export .quote-product-money {
+  min-width: 0;
+
+  font-size: 10px;
+}
+
+.quote-document.pdf-export .quote-product-money {
+  white-space: nowrap;
+}
+
+/* ============================================================
+       OBSERVACIONES / TOTALES
+       ============================================================ */
+
+.quote-document.pdf-export .quote-bottom-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 272px;
+
+  gap: 20px;
+  margin-top: 17px;
+
+  align-items: start;
+
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.quote-document.pdf-export .quote-observations-box,
+.quote-document.pdf-export .quote-summary {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.quote-document.pdf-export .quote-observations-content {
+  min-height: 78px;
+
+  margin-top: 7px;
+  padding: 12px;
+}
+
+.quote-document.pdf-export .quote-observations-content p {
+  max-width: 100%;
+
+  font-size: 9.5px;
+  line-height: 1.4;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.quote-document.pdf-export .quote-summary {
+  padding-top: 3px;
+
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.quote-document.pdf-export .quote-summary > div:not(.quote-summary-divider) {
+  min-width: 0;
+
+  gap: 14px;
+  padding: 4px 7px;
+
+  font-size: 10px;
+}
+
+.quote-document.pdf-export .quote-summary > div span,
+.quote-document.pdf-export .quote-summary > div strong {
+  min-width: 0;
+}
+
+.quote-document.pdf-export .quote-summary strong {
+  white-space: nowrap;
+}
+
+.quote-document.pdf-export .quote-summary-divider {
+  margin: 6px 0;
+}
+
+.quote-document.pdf-export .quote-summary-net {
+  font-size: 11.5px !important;
+}
+
+.quote-document.pdf-export .quote-summary-total {
+  margin-top: 7px;
+
+  padding: 10px 11px !important;
+
+  font-size: 14px !important;
+}
+
+.quote-document.pdf-export .quote-summary-total strong {
+  font-size: 16px;
+}
+
+/* ============================================================
+       FOOTER
+       ============================================================ */
+
+.quote-document.pdf-export .quote-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 8px;
+
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+.quote-document.pdf-export .quote-footer-message {
+  min-width: 0;
+  flex: 1 1 auto;
+
+  gap: 9px;
+}
+
+.quote-document.pdf-export .quote-footer-green-bar {
+  flex: 0 0 4px;
+
+  min-height: 38px;
+}
+
+.quote-document.pdf-export .quote-footer-message > div:last-child {
+  min-width: 0;
+}
+
+.quote-document.pdf-export .quote-footer-message p {
+  max-width: 100%;
+
+  margin: 2px 0;
+
+  font-size: 8.5px;
+
+  overflow-wrap: anywhere;
+}
+
+.quote-document.pdf-export .quote-footer-number {
+  flex: 0 0 auto;
+
+  gap: 5px;
+
+  font-size: 8px;
+
+  white-space: nowrap;
+}
+
+/* Bloques que no deben partirse entre dos páginas. */
+.quote-document.pdf-export .quote-brand-header,
+.quote-document.pdf-export .quote-heading,
+.quote-document.pdf-export .quote-client-grid,
+.quote-document.pdf-export .quote-products-head,
+.quote-document.pdf-export .quote-product-line,
+.quote-document.pdf-export .quote-bottom-section,
+.quote-document.pdf-export .quote-summary,
+.quote-document.pdf-export .quote-footer {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+/* ============================================================
+       RESPONSIVE APP
+       ============================================================ */
+
+@media (max-width: 1100px) {
+  .dashboard-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content {
+    padding: 30px;
+  }
+}
+
+@media (max-width: 800px) {
+  .app {
+    display: block;
+  }
+
+  aside {
+    width: 100%;
+    min-height: auto;
+
+    position: static;
+  }
+
+  .content {
+    padding: 22px;
+  }
+
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .module-header,
+  .dashboard-header {
+    flex-direction: column;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .full-width {
+    grid-column: auto;
+  }
+}
+
+/* ============================================================
+       IMPRESIÓN / PDF
+       ============================================================ */
+
+@media print {
+  @page {
+    size: Letter;
+
+    margin: 8mm;
+  }
+
+  html,
+  body {
+    width: 216mm;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    background: white !important;
+
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  aside,
+  .no-print {
+    display: none !important;
+  }
+
+  .app {
+    display: block !important;
+  }
+
+  .content {
+    width: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .quote-preview-wrapper {
+    width: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .quote-document {
+    width: 100% !important;
+
+    max-width: none !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+
+    padding: 4mm 5mm !important;
+
+    box-shadow: none !important;
+  }
+
+  /* HEADER */
+
+  .quote-logo-frame {
+    width: 51mm;
+    height: 39mm;
+  }
+
+  .quote-brand-logo {
+    width: 100%;
+    height: 100%;
+  }
+
+  .quote-brand-name span {
+    font-size: 14pt;
+  }
+
+  .quote-brand-name strong {
+    font-size: 25pt;
+  }
+
+  .quote-company-contact {
+    min-width: 67mm;
+
+    font-size: 9pt;
+  }
+
+  /* TITULO */
+
+  .quote-heading {
+    grid-template-columns:
+      1fr
+      82mm;
+
+    margin-bottom: 5mm;
+  }
+
+  .quote-heading-title h1 {
+    font-size: 32pt;
+  }
+
+  .quote-number {
+    font-size: 17pt;
+  }
+
+  .quote-meta-card {
+    padding: 4mm;
+  }
+
+  .quote-meta-card > div {
+    min-height: 7mm;
+
+    grid-template-columns:
+      6mm
+      20mm
+      1fr;
+
+    font-size: 9pt;
+  }
+
+  /* ========================================================
+         PRODUCTOS PDF — IMAGEN MÁS GRANDE
+         ======================================================== */
+
+  .quote-products-head,
+  .quote-product-line {
+    grid-template-columns:
+      49mm
+      minmax(0, 1fr)
+      10mm
+      20mm
+      20mm;
+  }
+
+  .quote-products-head {
+    min-height: 8mm;
+
+    font-size: 8pt;
+  }
+
+  .quote-products-head > div {
+    padding: 0 1.5mm;
+  }
+
+  .quote-product-line {
+    min-height: 29mm;
+  }
+
+  .quote-product-line > div {
+    padding: 2mm 1.5mm;
+  }
+
+  .quote-product-img-cell img {
+    width: 46mm;
+    height: 35mm;
+
+    object-fit: contain;
+  }
+
+  .quote-product-info strong {
+    font-size: 8.5pt;
+  }
+
+  .quote-product-info p {
+    font-size: 7.5pt;
+
+    line-height: 1.3;
+  }
+
+  .quote-product-qty,
+  .quote-product-money {
+    font-size: 8.3pt;
+  }
+
+  /* RESUMEN */
+
+  .quote-bottom-section {
+    grid-template-columns:
+      1fr
+      75mm;
+
+    gap: 8mm;
+  }
+
+  .quote-summary > div:not(.quote-summary-divider) {
+    font-size: 8.5pt;
+  }
+
+  .quote-summary-total {
+    font-size: 13pt !important;
+  }
+
+  .quote-summary-total strong {
+    font-size: 15pt;
+  }
+
+  .quote-footer {
+    margin-top: 12mm;
+  }
+
+  /* NO CORTAR BLOQUES */
+
+  .quote-product-line,
+  .quote-client-grid,
+  .quote-bottom-section,
+  .quote-summary {
+    break-inside: avoid;
+
+    page-break-inside: avoid;
+  }
+}
+
+/* ============================================================
+     HOST TEMPORAL DE EXPORTACIÓN PDF
+     ============================================================
+     Es una copia de la misma hoja Carta que se ve en la preview.
+     Se mantiene en 0,0 y sin transformaciones para que html2canvas
+     nunca herede el centrado/scale del navegador.
+     ============================================================ */
+
+.pdf-export-host {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+
+  width: 816px !important;
+  min-width: 816px !important;
+  max-width: 816px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  background: #ffffff !important;
+
+  pointer-events: none !important;
+  z-index: 2147483647 !important;
+
+  overflow: visible !important;
+}
+
+.pdf-export-host > .pdf-letter-source {
+  width: 816px !important;
+  min-width: 816px !important;
+  max-width: 816px !important;
+
+  margin: 0 !important;
+
+  transform: none !important;
+  transform-origin: top left !important;
+
+  box-shadow: none !important;
+}
+
+.quote-preview-error {
+  width: 100%;
+  max-width: 816px;
+  margin: 0 auto 14px;
+}
