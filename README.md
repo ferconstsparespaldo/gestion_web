@@ -18,7 +18,6 @@ propio proyecto Supabase y su propia configuración, sin tocar código.
 - Gastos.
 - Estado de resultados.
 - Impuestos (pensado para el régimen tributario chileno: IVA, PPM).
-- Capital de socios (solo administradores).
 - Configuración de empresa y administración de usuarios.
 
 ## Cómo está pensada la genericidad
@@ -39,7 +38,6 @@ VITE_SUPABASE_ANON_KEY=
 VITE_APP_NAME=
 VITE_APP_LOCALE=
 VITE_APP_MONEDA_SIMBOLO=
-VITE_STORAGE_BUCKET_PRODUCTOS=
 VITE_STORAGE_BUCKET_ASSETS=
 ```
 
@@ -49,8 +47,8 @@ son opcionales, con valores por defecto pensados para una PyME chilena).
 ## Desplegar esta plantilla para una empresa nueva
 
 1. Crea un proyecto Supabase nuevo (uno por empresa/cliente).
-2. Crea los buckets de Storage `productos` y `assets` (o los nombres que
-   definas en `VITE_STORAGE_BUCKET_*`).
+2. Crea el bucket de Storage `assets` (o el nombre que definas en
+   `VITE_STORAGE_BUCKET_ASSETS`).
 3. Ejecuta las migraciones de `supabase/migrations/` en orden, desde el SQL
    Editor de Supabase o con Supabase CLI (ver sección siguiente).
 4. Despliega la Edge Function `admin-users` (ver más abajo).
@@ -94,8 +92,8 @@ La carpeta `supabase/migrations/` contiene, en orden:
      (`profiles`, `configuracion_empresa`, `clientes`, `proveedores`,
      `productos`, `producto_proveedor`, `cotizaciones`,
      `cotizacion_items`, `pagos_clientes`, `pagos_proveedores`,
-     `categorias_gasto`, `gastos`, `impuestos_mensuales`) y los buckets de
-     Storage (`productos`, `assets`). Las migraciones que siguen fueron
+     `categorias_gasto`, `gastos`, `impuestos_mensuales`) y el bucket de
+     Storage (`assets`). Las migraciones que siguen fueron
      escritas como parches incrementales sobre una base que en el
      despliegue original se creó a mano desde el SQL Editor de Supabase y
      nunca quedó documentada como migración; este archivo cierra ese
@@ -111,7 +109,7 @@ La carpeta `supabase/migrations/` contiene, en orden:
 2. `202609070002_seguridad_rls.sql`
    - helpers de usuario activo/admin;
    - políticas RLS para comercial, configuración y finanzas;
-   - políticas de Storage para productos y logo.
+   - políticas de Storage para el logo.
 3. `202609080001_eliminacion_admin.sql`
    - eliminación/desactivación de registros restringida a administradores.
 4. `202609080002_gastos_tipo_socio.sql`
@@ -128,25 +126,20 @@ La carpeta `supabase/migrations/` contiene, en orden:
    - columna `fecha_pago` en `gastos` (con backfill para los ya marcados
      Pagado). El flujo de caja real (Estado de Resultados y Dashboard) usa
      `fecha_pago` para ubicar la salida de dinero en el mes correcto.
-7. `202609090003_capital_socios.sql`
-   - tabla `capital_movimientos` (aportes/retiros de capital de los socios),
-     con RLS exclusiva para administradores.
-8. `202609090004_capital_socios_permisos.sql`
-   - revoca el privilegio por defecto de `anon` sobre `capital_movimientos`.
-9. `202609100000_correcciones_proveedores.sql`
+7. `202609100000_correcciones_proveedores.sql`
    - agrega `desactivar_proveedor_admin` (el frontend ya la invocaba pero
      no existía como migración) y los mismos resguardos de solo-admin que
      ya tenían clientes/productos.
-10. `202609100001_sectores.sql`
-    - catálogo de sectores/obras (tabla, RLS, baja administrada).
-11. `202609100002_cotizaciones_ferconst.sql`
-    - agrega a `cotizaciones`: sector, N° de orden, fecha(s) trabajada(s)
-      y bloque de mano de obra (horario, N° de trabajadores, valor hora,
-      costo HH calculado); agrega valores por defecto de mano de obra a
-      `configuracion_empresa`.
-12. `202609100003_productos_proveedor_opcional.sql`
+8. `202609100001_sectores.sql`
+   - catálogo de sectores/obras (tabla, RLS, baja administrada).
+9. `202609100002_cotizaciones_ferconst.sql`
+   - agrega a `cotizaciones`: sector, N° de orden, fecha(s) trabajada(s)
+     y bloque de mano de obra (horario, N° de trabajadores, valor hora,
+     costo HH calculado); agrega valores por defecto de mano de obra a
+     `configuracion_empresa`.
+10. `202609100003_productos_proveedor_opcional.sql`
     - el proveedor deja de ser obligatorio al crear un producto.
-13. `202609100004_numeracion_simple.sql`
+11. `202609100004_numeracion_simple.sql`
     - cambia la numeración de cotizaciones de `PREFIJO-AÑO-0001` a un
       correlativo simple y continuo (sin prefijo ni año), y siembra el
       correlativo para continuar desde donde haya quedado la numeración
@@ -231,7 +224,7 @@ Después del despliegue prueba, como mínimo:
 2. Login trabajador.
 3. Crear/editar cliente.
 4. Crear/editar proveedor.
-5. Crear producto con imagen.
+5. Crear producto.
 6. Crear cotización, guardar, reabrir y descargar PDF (verifica que muestre
    la razón social/logo configurados, no un placeholder).
 7. Aceptar/rechazar cotización.

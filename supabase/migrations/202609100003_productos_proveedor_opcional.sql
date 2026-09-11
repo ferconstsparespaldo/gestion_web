@@ -37,11 +37,10 @@ begin
   end if;
 
   if p_producto_id is null then
-    insert into public.productos (nombre, descripcion, imagen_url, categoria)
+    insert into public.productos (nombre, descripcion, categoria)
     values (
       trim(p_producto->>'nombre'),
       nullif(p_producto->>'descripcion', ''),
-      nullif(p_producto->>'imagen_url', ''),
       nullif(p_producto->>'categoria', '')
     )
     returning id into v_producto_id;
@@ -50,7 +49,6 @@ begin
     set
       nombre = trim(p_producto->>'nombre'),
       descripcion = nullif(p_producto->>'descripcion', ''),
-      imagen_url = nullif(p_producto->>'imagen_url', ''),
       categoria = nullif(p_producto->>'categoria', '')
     where id = p_producto_id
     returning id into v_producto_id;

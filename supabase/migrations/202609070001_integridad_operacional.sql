@@ -227,7 +227,6 @@ begin
       proveedor_id,
       nombre_producto,
       descripcion,
-      imagen_url,
       cantidad,
       precio_neto_proveedor,
       beneficio_unitario,
@@ -241,7 +240,6 @@ begin
       nullif(v_item->>'proveedor_id', '')::uuid,
       v_item->>'nombre_producto',
       nullif(v_item->>'descripcion', ''),
-      nullif(v_item->>'imagen_url', ''),
       (v_item->>'cantidad')::numeric,
       coalesce((v_item->>'precio_neto_proveedor')::numeric, 0),
       coalesce((v_item->>'beneficio_unitario')::numeric, 0),
@@ -291,11 +289,10 @@ begin
   end if;
 
   if p_producto_id is null then
-    insert into public.productos (nombre, descripcion, imagen_url, categoria)
+    insert into public.productos (nombre, descripcion, categoria)
     values (
       trim(p_producto->>'nombre'),
       nullif(p_producto->>'descripcion', ''),
-      nullif(p_producto->>'imagen_url', ''),
       nullif(p_producto->>'categoria', '')
     )
     returning id into v_producto_id;
@@ -304,7 +301,6 @@ begin
     set
       nombre = trim(p_producto->>'nombre'),
       descripcion = nullif(p_producto->>'descripcion', ''),
-      imagen_url = nullif(p_producto->>'imagen_url', ''),
       categoria = nullif(p_producto->>'categoria', '')
     where id = p_producto_id
     returning id into v_producto_id;

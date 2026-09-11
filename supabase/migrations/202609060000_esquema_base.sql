@@ -119,7 +119,6 @@ create table if not exists public.productos (
   id uuid primary key default gen_random_uuid(),
   nombre text not null,
   descripcion text,
-  imagen_url text,
   categoria text,
   activo boolean not null default true,
   created_at timestamptz not null default now(),
@@ -202,7 +201,6 @@ create table if not exists public.cotizacion_items (
 
   nombre_producto text not null,
   descripcion text,
-  imagen_url text,
 
   cantidad numeric not null default 1,
   precio_neto_proveedor numeric not null default 0,
@@ -329,10 +327,6 @@ for each row execute function public.set_updated_at();
 -- ------------------------------------------------------------
 -- Storage: buckets usados por la plantilla
 -- ------------------------------------------------------------
-insert into storage.buckets (id, name, public)
-values ('productos', 'productos', true)
-on conflict (id) do nothing;
-
 insert into storage.buckets (id, name, public)
 values ('assets', 'assets', true)
 on conflict (id) do nothing;

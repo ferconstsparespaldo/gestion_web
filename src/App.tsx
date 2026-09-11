@@ -17,7 +17,6 @@ import Pagos from './components/Pagos';
 import Gastos from './components/Gastos';
 import EstadoResultados from './components/EstadoResultados';
 import Impuestos from './components/Impuestos';
-import Capital from './components/Capital';
 import Dashboard from './components/Dashboard';
 
 const NOMBRE_APP = (import.meta.env.VITE_APP_NAME || 'Plataforma de Gestión').trim();
@@ -41,7 +40,6 @@ type Pagina =
   | 'gastos'
   | 'resultados'
   | 'impuestos'
-  | 'capital'
   | 'configuracion';
 
 const NOMBRE_PAGINA: Record<Pagina, string> = {
@@ -55,7 +53,6 @@ const NOMBRE_PAGINA: Record<Pagina, string> = {
   gastos: 'Gastos',
   resultados: 'Estado de Resultados',
   impuestos: 'Impuestos',
-  capital: 'Capital de socios',
   configuracion: 'Configuración',
 };
 
@@ -70,7 +67,6 @@ const SECCION_PAGINA: Record<Pagina, string> = {
   gastos: 'Finanzas',
   resultados: 'Finanzas',
   impuestos: 'Finanzas',
-  capital: 'Finanzas',
   configuracion: 'Sistema',
 };
 
@@ -367,9 +363,6 @@ function AppShell({
       case 'impuestos':
         return esAdmin ? <Impuestos /> : null;
 
-      case 'capital':
-        return esAdmin ? <Capital /> : null;
-
       case 'configuracion':
         return esAdmin ? <Configuracion /> : null;
 
@@ -488,14 +481,6 @@ function AppShell({
               >
                 <span className="nav-icon">%</span>
                 <span>Impuestos</span>
-              </button>
-
-              <button
-                className={pagina === 'capital' ? 'active' : ''}
-                onClick={() => setPagina('capital')}
-              >
-                <span className="nav-icon">◈</span>
-                <span>Capital de socios</span>
               </button>
 
               <div className="nav-divider" />

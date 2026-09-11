@@ -111,28 +111,6 @@ $$;
 -- La tabla interna de correlativos no se expone directamente.
 revoke all on table public.cotizacion_correlativos from anon, authenticated;
 
--- Storage de productos: usuarios activos pueden operar imágenes del catálogo.
-drop policy if exists "lu_storage_productos_select" on storage.objects;
-create policy "lu_storage_productos_select"
-on storage.objects for select to authenticated
-using (bucket_id = 'productos' and public.usuario_activo());
-
-drop policy if exists "lu_storage_productos_insert" on storage.objects;
-create policy "lu_storage_productos_insert"
-on storage.objects for insert to authenticated
-with check (bucket_id = 'productos' and public.usuario_activo());
-
-drop policy if exists "lu_storage_productos_update" on storage.objects;
-create policy "lu_storage_productos_update"
-on storage.objects for update to authenticated
-using (bucket_id = 'productos' and public.usuario_activo())
-with check (bucket_id = 'productos' and public.usuario_activo());
-
-drop policy if exists "lu_storage_productos_delete" on storage.objects;
-create policy "lu_storage_productos_delete"
-on storage.objects for delete to authenticated
-using (bucket_id = 'productos' and public.usuario_activo());
-
 -- Logo de empresa: lectura para usuarios activos y escritura solo admin.
 drop policy if exists "lu_storage_assets_select" on storage.objects;
 create policy "lu_storage_assets_select"

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { STORAGE } from '../lib/storage';
 import { formatearNumero } from '../utils/formato';
 
 type ProductosProps = {
@@ -26,7 +25,6 @@ type Producto = {
   id: string;
   nombre: string;
   descripcion: string | null;
-  imagen_url: string | null;
   categoria: string | null;
   activo: boolean;
   producto_proveedor?: ProductoProveedor[];
@@ -35,7 +33,6 @@ type Producto = {
 type FormProducto = {
   nombre: string;
   descripcion: string;
-  imagen_url: string;
   categoria: string;
   proveedor_id: string;
   precio_neto_actual: string;
@@ -45,7 +42,6 @@ type FormProducto = {
 const productoVacio: FormProducto = {
   nombre: '',
   descripcion: '',
-  imagen_url: '',
   categoria: '',
   proveedor_id: '',
   precio_neto_actual: '',
@@ -66,27 +62,14 @@ function Productos({ esAdmin }: ProductosProps) {
 
   const [form, setForm] = useState<FormProducto>(productoVacio);
 
-  const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
-
-  const [previewArchivo, setPreviewArchivo] = useState<string>('');
-
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
-  const [subiendoImagen, setSubiendoImagen] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     cargarTodo();
   }, []);
-
-  useEffect(() => {
-    return () => {
-      if (previewArchivo.startsWith('blob:')) {
-        URL.revokeObjectURL(previewArchivo);
-      }
-    };
-  }, [previewArchivo]);
 
   async function cargarTodo() {
     setLoading(true);
@@ -100,7 +83,6 @@ function Productos({ esAdmin }: ProductosProps) {
             id,
             nombre,
             descripcion,
-            imagen_url,
             categoria,
             activo,
             producto_proveedor (
@@ -142,9 +124,6 @@ function Productos({ esAdmin }: ProductosProps) {
   function nuevoProducto() {
     setForm(productoVacio);
 
-    setArchivoImagen(null);
-    setPreviewArchivo('');
-
     setEditandoId(null);
     setRelacionEditandoId(null);
 
@@ -158,15 +137,11 @@ function Productos({ esAdmin }: ProductosProps) {
     setForm({
       nombre: producto.nombre || '',
       descripcion: producto.descripcion || '',
-      imagen_url: producto.imagen_url || '',
       categoria: producto.categoria || '',
       proveedor_id: relacion?.proveedor_id || '',
       precio_neto_actual: relacion?.precio_neto_actual?.toString() || '',
       beneficio_sugerido: relacion?.beneficio_sugerido?.toString() || '',
     });
-
-    setArchivoImagen(null);
-    setPreviewArchivo('');
 
     setEditandoId(producto.id);
 
@@ -179,70 +154,11 @@ function Productos({ esAdmin }: ProductosProps) {
   function cancelar() {
     setForm(productoVacio);
 
-    setArchivoImagen(null);
-    setPreviewArchivo('');
-
     setEditandoId(null);
     setRelacionEditandoId(null);
 
     setMostrarFormulario(false);
     setError('');
-  }
-
-  function seleccionarImagen(e: React.ChangeEvent<HTMLInputElement>) {
-    const archivo = e.target.files?.[0];
-
-    if (!archivo) return;
-
-    const tiposPermitidos = new Set(['image/jpeg', 'image/png', 'image/webp']);
-
-    if (!tiposPermitidos.has(archivo.type)) {
-      setError('La imagen debe ser JPG, PNG o WEBP.');
-      return;
-    }
-
-    const maxSize = 5 * 1024 * 1024;
-
-    if (archivo.size > maxSize) {
-      setError('La imagen no puede pesar más de 5 MB.');
-      return;
-    }
-
-    setArchivoImagen(archivo);
-    setPreviewArchivo(URL.createObjectURL(archivo));
-
-    setError('');
-  }
-
-  async function subirImagenSupabase(archivo: File) {
-    setSubiendoImagen(true);
-
-    const extension = archivo.name.split('.').pop() || 'jpg';
-
-    const nombreArchivo = `${crypto.randomUUID()}.${extension}`;
-
-    const ruta = `productos/${nombreArchivo}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from(STORAGE.bucketProductos)
-      .upload(ruta, archivo, {
-        cacheControl: '3600',
-        upsert: false,
-        contentType: archivo.type,
-      });
-
-    if (uploadError) {
-      setSubiendoImagen(false);
-      throw uploadError;
-    }
-
-    const { data } = supabase.storage
-      .from(STORAGE.bucketProductos)
-      .getPublicUrl(ruta);
-
-    setSubiendoImagen(false);
-
-    return { publicUrl: data.publicUrl, ruta };
   }
 
   async function guardarProducto(e: React.FormEvent) {
@@ -266,29 +182,9 @@ function Productos({ esAdmin }: ProductosProps) {
       return;
     }
 
-    let imagenFinal = form.imagen_url.trim() || null;
-    let rutaNuevaImagen: string | null = null;
-
-    if (archivoImagen) {
-      try {
-        const subida = await subirImagenSupabase(archivoImagen);
-        imagenFinal = subida.publicUrl;
-        rutaNuevaImagen = subida.ruta;
-      } catch (err) {
-        setError(
-          `No se pudo subir la imagen: ${
-            err instanceof Error ? err.message : 'Error desconocido'
-          }`
-        );
-        setGuardando(false);
-        return;
-      }
-    }
-
     const datosProducto = {
       nombre: form.nombre.trim(),
       descripcion: form.descripcion.trim() || null,
-      imagen_url: imagenFinal,
       categoria: form.categoria.trim() || null,
     };
 
@@ -309,12 +205,6 @@ function Productos({ esAdmin }: ProductosProps) {
     );
 
     if (guardarError) {
-      if (rutaNuevaImagen) {
-        await supabase.storage
-          .from(STORAGE.bucketProductos)
-          .remove([rutaNuevaImagen]);
-      }
-
       setError(guardarError.message);
       setGuardando(false);
       return;
@@ -368,8 +258,6 @@ function Productos({ esAdmin }: ProductosProps) {
     );
   });
 
-  const imagenPreview = previewArchivo || form.imagen_url;
-
   return (
     <div className="module-page">
       <div className="module-header">
@@ -379,7 +267,7 @@ function Productos({ esAdmin }: ProductosProps) {
           <h1>Productos</h1>
 
           <p className="module-description">
-            Administra productos, proveedores, precios netos e imágenes.
+            Administra productos, proveedores y precios netos.
           </p>
         </div>
 
@@ -454,63 +342,6 @@ function Productos({ esAdmin }: ProductosProps) {
                   }
                 />
               </label>
-
-              {/* IMAGEN */}
-
-              <div className="full-width image-section">
-                <h3>Imagen del producto</h3>
-
-                <p className="small-muted">
-                  Puedes pegar una URL o seleccionar una imagen desde el
-                  computador.
-                </p>
-              </div>
-
-              <label className="full-width">
-                URL de imagen
-                <input
-                  value={form.imagen_url}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      imagen_url: e.target.value,
-                    })
-                  }
-                  placeholder="https://..."
-                />
-              </label>
-
-              <div className="full-width upload-area">
-                <span className="upload-label">O subir desde computador</span>
-
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  onChange={seleccionarImagen}
-                />
-
-                {archivoImagen && (
-                  <p className="small-muted">
-                    Archivo seleccionado: <strong>{archivoImagen.name}</strong>
-                  </p>
-                )}
-              </div>
-
-              {imagenPreview && (
-                <div className="full-width">
-                  <p className="small-muted">Vista previa</p>
-
-                  <div className="product-image-preview">
-                    <img
-                      src={imagenPreview}
-                      alt="Vista previa"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* PROVEEDOR */}
 
@@ -592,13 +423,9 @@ function Productos({ esAdmin }: ProductosProps) {
               <button
                 type="submit"
                 className="primary-button"
-                disabled={guardando || subiendoImagen}
+                disabled={guardando}
               >
-                {subiendoImagen
-                  ? 'Subiendo imagen...'
-                  : guardando
-                  ? 'Guardando...'
-                  : 'Guardar producto'}
+                {guardando ? 'Guardando...' : 'Guardar producto'}
               </button>
             </div>
           </form>
@@ -618,7 +445,6 @@ function Productos({ esAdmin }: ProductosProps) {
           <table>
             <thead>
               <tr>
-                <th>Imagen</th>
                 <th>Producto</th>
                 <th>Proveedor</th>
                 <th>Costo neto</th>
@@ -638,18 +464,6 @@ function Productos({ esAdmin }: ProductosProps) {
 
                 return (
                   <tr key={producto.id}>
-                    <td>
-                      {producto.imagen_url ? (
-                        <img
-                          className="product-table-image"
-                          src={producto.imagen_url}
-                          alt={producto.nombre}
-                        />
-                      ) : (
-                        '—'
-                      )}
-                    </td>
-
                     <td>
                       <strong>{producto.nombre}</strong>
 

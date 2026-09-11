@@ -54,10 +54,9 @@ Revisa especialmente:
 
 ## Storage
 
-La aplicación espera, por defecto (nombres configurables vía
-`VITE_STORAGE_BUCKET_PRODUCTOS`/`VITE_STORAGE_BUCKET_ASSETS`, ver `.env.example`):
+La aplicación espera, por defecto (nombre configurable vía
+`VITE_STORAGE_BUCKET_ASSETS`, ver `.env.example`):
 
-- bucket `productos` para imágenes del catálogo;
 - bucket `assets` con el logo `Logo/Logo.png`.
 
 Si estos buckets son públicos, las URLs pueden leerse sin autenticación. Si contienen información que no deba ser pública, conviértelos a privados y adapta el frontend para usar signed URLs.

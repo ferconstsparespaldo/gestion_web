@@ -41,7 +41,6 @@ type Producto = {
   id: string;
   nombre: string;
   descripcion: string | null;
-  imagen_url: string | null;
   producto_proveedor: ProductoProveedor[];
 };
 
@@ -53,7 +52,6 @@ type ItemCotizacion = {
 
   nombre_producto: string;
   descripcion: string;
-  imagen_url: string;
 
   precio_neto_proveedor: number;
   beneficio_unitario: number;
@@ -90,7 +88,6 @@ function itemVacio(): ItemCotizacion {
 
     nombre_producto: '',
     descripcion: '',
-    imagen_url: '',
 
     precio_neto_proveedor: 0,
     beneficio_unitario: 0,
@@ -289,7 +286,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
             id,
             nombre,
             descripcion,
-            imagen_url,
             producto_proveedor (
               id,
               proveedor_id,
@@ -482,8 +478,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
       descripcion: producto.descripcion || '',
 
-      imagen_url: producto.imagen_url || '',
-
       precio_neto_proveedor: costo,
 
       beneficio_unitario: beneficio,
@@ -654,7 +648,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
       proveedor_id: item.proveedor_id || null,
       nombre_producto: item.nombre_producto,
       descripcion: item.descripcion || null,
-      imagen_url: item.imagen_url || null,
       cantidad: Number(item.cantidad),
       precio_neto_proveedor: Number(item.precio_neto_proveedor),
       beneficio_unitario: Number(item.beneficio_unitario),
@@ -817,8 +810,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
       nombre_producto: item.nombre_producto || '',
 
       descripcion: item.descripcion || '',
-
-      imagen_url: item.imagen_url || '',
 
       cantidad: Number(item.cantidad || 1),
 
@@ -1388,8 +1379,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
                   <div className="quote-products-table">
                     <div className="quote-products-head">
-                      <div>Imagen</div>
-
                       <div>Producto y descripción</div>
 
                       <div>Cant.</div>
@@ -1401,17 +1390,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
                     {items.map((item) => (
                       <div className="quote-product-line" key={item.tempId}>
-                        <div className="quote-product-img-cell">
-                          {item.imagen_url ? (
-                            <img
-                              src={item.imagen_url}
-                              alt={item.nombre_producto}
-                            />
-                          ) : (
-                            <span>—</span>
-                          )}
-                        </div>
-
                         <div className="quote-product-info">
                           <strong>{item.nombre_producto}</strong>
 
@@ -1789,16 +1767,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
                   ))}
                 </select>
               </label>
-
-              {item.imagen_url && (
-                <div className="full-width">
-                  <img
-                    className="quote-editor-image"
-                    src={item.imagen_url}
-                    alt={item.nombre_producto}
-                  />
-                </div>
-              )}
 
               <label className="full-width">
                 Descripción

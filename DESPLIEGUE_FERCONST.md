@@ -72,13 +72,11 @@ el contenido de cada archivo de `supabase/migrations/`:
 5. `202609080002_gastos_tipo_socio.sql`
 6. `202609090001_cotizaciones_fecha_factura.sql`
 7. `202609090002_gastos_fecha_pago.sql`
-8. `202609090003_capital_socios.sql`
-9. `202609090004_capital_socios_permisos.sql`
-10. `202609100000_correcciones_proveedores.sql`
-11. `202609100001_sectores.sql`
-12. `202609100002_cotizaciones_ferconst.sql`
-13. `202609100003_productos_proveedor_opcional.sql`
-14. `202609100004_numeracion_simple.sql`
+8. `202609100000_correcciones_proveedores.sql`
+9. `202609100001_sectores.sql`
+10. `202609100002_cotizaciones_ferconst.sql`
+11. `202609100003_productos_proveedor_opcional.sql`
+12. `202609100004_numeracion_simple.sql`
 
 Cada una debe terminar con "Success. No rows returned" (o similar). Si
 alguna falla, detente y revisa el mensaje antes de seguir con la
@@ -128,10 +126,11 @@ Edge Function.
    crean directamente desde la app en **Configuración → Usuarios** — ya
    no hace falta volver al SQL Editor.
 
-### 2.6 Buckets de Storage
+### 2.6 Bucket de Storage
 
-Ya quedan creados automáticamente por `202609060000_esquema_base.sql`
-(`productos` y `assets`, ambos públicos). No requiere ningún paso manual.
+Ya queda creado automáticamente por `202609060000_esquema_base.sql`
+(`assets`, público, usado solo para el logo de la empresa). No requiere
+ningún paso manual.
 
 ---
 
