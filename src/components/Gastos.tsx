@@ -719,7 +719,7 @@ function Gastos() {
               )}
 
               <label>
-                Nº documento
+                N° documento
                 <input
                   value={numeroDocumento}
                   onChange={(event) => setNumeroDocumento(event.target.value)}

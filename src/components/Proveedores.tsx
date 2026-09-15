@@ -136,6 +136,10 @@ function Proveedores({ esAdmin }: ProveedoresProps) {
     setEliminandoId(proveedor.id)
     setError('')
 
+    // PENDIENTE: 'desactivar_proveedor_admin' no existe en supabase/migrations/.
+    // Esta llamada falla hoy en producción. Falta agregar la función en una
+    // migración nueva, siguiendo el mismo patrón que desactivar_cliente_admin /
+    // desactivar_producto_admin (202609080001_eliminacion_admin.sql).
     const { error } = await supabase.rpc('desactivar_proveedor_admin', {
       p_proveedor_id: proveedor.id,
     })

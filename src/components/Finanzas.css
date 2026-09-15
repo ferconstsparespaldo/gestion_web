@@ -25,18 +25,18 @@
 }
 
 .finance-kpi-card {
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(43, 46, 51, 0.08);
   border-radius: 16px;
   padding: 18px;
   background: #fff;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 8px 24px rgba(43, 46, 51, 0.05);
   min-width: 0;
 }
 
 .finance-kpi-card span {
   display: block;
   font-size: 13px;
-  color: #64748b;
+  color: var(--brand-gray);
   margin-bottom: 7px;
 }
 
@@ -44,17 +44,19 @@
   display: block;
   font-size: clamp(22px, 2vw, 30px);
   line-height: 1.1;
-  color: #0f172a;
+  color: var(--brand-graphite);
   overflow-wrap: anywhere;
 }
 
 .finance-kpi-card small {
   display: block;
   margin-top: 8px;
-  color: #94a3b8;
+  color: var(--brand-gray);
   font-size: 12px;
 }
 
+/* Semáforo de estado (positivo/negativo): se mantiene verde/rojo a
+   propósito, independiente del color de marca. */
 .finance-positive {
   color: #15803d !important;
 }
@@ -96,9 +98,9 @@
 
 .finance-type-selector button,
 .finance-tabs button {
-  border: 1px solid #dbe2ea;
+  border: 1px solid var(--brand-gray-border);
   background: #fff;
-  color: #334155;
+  color: var(--brand-graphite);
   border-radius: 10px;
   padding: 10px 14px;
   font-weight: 700;
@@ -107,14 +109,14 @@
 
 .finance-type-selector button.active,
 .finance-tabs button.active {
-  background: #0f172a;
-  border-color: #0f172a;
+  background: var(--brand-graphite);
+  border-color: var(--brand-graphite);
   color: #fff;
 }
 
 .finance-tabs {
   margin: 22px 0 14px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--brand-gray-border);
   padding-bottom: 10px;
 }
 
@@ -137,8 +139,8 @@
 }
 
 .finance-tabs button:not(.active) span {
-  background: #eef2f7;
-  color: #475569;
+  background: var(--brand-gray-bg);
+  color: var(--brand-gray);
 }
 
 .finance-form-actions {
@@ -151,10 +153,10 @@
 .finance-inline-note {
   margin-top: 14px;
   padding: 12px 14px;
-  border: 1px solid #dbe2ea;
+  border: 1px solid var(--brand-gray-border);
   border-radius: 10px;
-  background: #f8fafc;
-  color: #475569;
+  background: var(--brand-gray-bg);
+  color: var(--brand-gray);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -173,23 +175,23 @@
 .finance-table th,
 .finance-table td {
   padding: 12px 10px;
-  border-bottom: 1px solid #edf0f3;
+  border-bottom: 1px solid var(--brand-gray-border);
   text-align: left;
   vertical-align: middle;
   font-size: 13px;
 }
 
 .finance-table th {
-  color: #64748b;
+  color: var(--brand-gray);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 800;
-  background: #fafbfc;
+  background: var(--brand-gray-bg);
 }
 
 .finance-table td {
-  color: #334155;
+  color: var(--brand-graphite);
 }
 
 .finance-table tr:last-child td {
@@ -211,6 +213,7 @@
   white-space: nowrap;
 }
 
+/* Semáforo de estado: se mantiene verde/rojo/ámbar a propósito. */
 .finance-badge-success {
   background: #dcfce7;
   color: #166534;
@@ -229,7 +232,7 @@
 .finance-text-button {
   border: 0;
   background: transparent;
-  color: #0f766e;
+  color: var(--brand-yellow-dark);
   font-weight: 800;
   cursor: pointer;
   padding: 4px 0;
@@ -246,12 +249,12 @@
 .finance-empty {
   padding: 30px !important;
   text-align: center !important;
-  color: #94a3b8 !important;
+  color: var(--brand-gray) !important;
 }
 
 .finance-footnote {
   margin: 14px 0 0;
-  color: #64748b;
+  color: var(--brand-gray);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -284,7 +287,7 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  border: 1px solid #dbe2ea;
+  border: 1px solid var(--brand-gray-border);
   background: #fff;
   font-size: 20px;
   cursor: pointer;
@@ -307,6 +310,8 @@
   margin: 0;
 }
 
+/* Semáforo de estado (pendiente=ámbar / pagado=verde): se mantiene
+   a propósito, independiente del color de marca. */
 .finance-status-button {
   border: 1px solid #f59e0b;
   background: #fffbeb;
@@ -331,7 +336,7 @@
   min-width: 190px;
   font-size: 12px;
   font-weight: 800;
-  color: #64748b;
+  color: var(--brand-gray);
 }
 
 .finance-month-selector input {
@@ -339,7 +344,7 @@
 }
 
 .finance-loading-label {
-  color: #64748b;
+  color: var(--brand-gray);
   font-size: 13px;
   font-weight: 700;
 }
@@ -366,15 +371,15 @@
   justify-content: space-between;
   gap: 18px;
   padding: 12px 0;
-  border-bottom: 1px solid #edf0f3;
+  border-bottom: 1px solid var(--brand-gray-border);
 }
 
 .finance-result-lines > div span {
-  color: #475569;
+  color: var(--brand-gray);
 }
 
 .finance-result-lines > div strong {
-  color: #0f172a;
+  color: var(--brand-graphite);
   text-align: right;
 }
 
@@ -388,14 +393,14 @@
 
 .finance-result-lines > div.subtotal {
   margin-top: 3px;
-  border-top: 1px solid #cbd5e1;
+  border-top: 1px solid var(--brand-gray-border);
   font-weight: 800;
 }
 
 .finance-result-lines > div.grand-total {
   margin-top: 7px;
   padding: 15px 0;
-  border-top: 2px solid #0f172a;
+  border-top: 2px solid var(--brand-graphite);
   border-bottom: 0;
   font-size: 16px;
   font-weight: 900;
@@ -409,9 +414,9 @@
 
 .finance-compact-metrics button {
   text-align: left;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--brand-gray-border);
   border-radius: 12px;
-  background: #fafafa;
+  background: var(--brand-gray-bg);
   padding: 14px;
   cursor: pointer;
 }
@@ -422,13 +427,13 @@
 }
 
 .finance-compact-metrics span {
-  color: #64748b;
+  color: var(--brand-gray);
   font-size: 12px;
   margin-bottom: 5px;
 }
 
 .finance-compact-metrics strong {
-  color: #0f172a;
+  color: var(--brand-graphite);
   font-size: 18px;
 }
 
@@ -443,7 +448,7 @@
   align-items: center;
   gap: 10px;
   padding: 12px 0;
-  border-bottom: 1px solid #edf0f3;
+  border-bottom: 1px solid var(--brand-gray-border);
 }
 
 .finance-ranking > div:last-child {
@@ -457,7 +462,7 @@
 
 .finance-ranking span small {
   display: block;
-  color: #94a3b8;
+  color: var(--brand-gray);
   margin-top: 3px;
 }
 
@@ -468,8 +473,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #f1f5f9;
-  color: #334155;
+  background: var(--brand-gray-bg);
+  color: var(--brand-graphite);
   font-weight: 900;
   font-size: 12px;
 }

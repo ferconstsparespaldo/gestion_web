@@ -822,7 +822,7 @@ function Pagos() {
 
               {tipoPago === 'proveedor' && (
                 <label>
-                  Nº documento
+                  N° documento
                   <input
                     value={numeroDocumento}
                     onChange={(event) => setNumeroDocumento(event.target.value)}
@@ -836,7 +836,7 @@ function Pagos() {
                 <input
                   value={referencia}
                   onChange={(event) => setReferencia(event.target.value)}
-                  placeholder="Nº transferencia, comprobante..."
+                  placeholder="N° transferencia, comprobante..."
                 />
               </label>
 
