@@ -8,8 +8,6 @@ import { EmpresaProvider, useEmpresa } from './context/EmpresaContext';
 import { iniciales } from './utils/formato';
 
 import Clientes from './components/Clientes';
-import Sectores from './components/Sectores';
-import Proveedores from './components/Proveedores';
 import Productos from './components/Productos';
 import Cotizaciones from './components/Cotizaciones';
 import Configuracion from './components/Configuracion';
@@ -17,6 +15,7 @@ import Pagos from './components/Pagos';
 import Gastos from './components/Gastos';
 import EstadoResultados from './components/EstadoResultados';
 import Impuestos from './components/Impuestos';
+import Capital from './components/Capital';
 import Dashboard from './components/Dashboard';
 
 const NOMBRE_APP = (import.meta.env.VITE_APP_NAME || 'Plataforma de Gestión').trim();
@@ -32,41 +31,38 @@ type Profile = {
 type Pagina =
   | 'dashboard'
   | 'clientes'
-  | 'sectores'
   | 'cotizaciones'
   | 'productos'
-  | 'proveedores'
   | 'pagos'
   | 'gastos'
   | 'resultados'
   | 'impuestos'
+  | 'capital'
   | 'configuracion';
 
 const NOMBRE_PAGINA: Record<Pagina, string> = {
   dashboard: 'Dashboard',
   clientes: 'Clientes',
-  sectores: 'Sectores',
   cotizaciones: 'Cotizaciones',
   productos: 'Productos',
-  proveedores: 'Proveedores',
-  pagos: 'Pagos',
+  pagos: 'Pagado',
   gastos: 'Gastos',
   resultados: 'Estado de Resultados',
   impuestos: 'Impuestos',
+  capital: 'Capital de socios',
   configuracion: 'Configuración',
 };
 
 const SECCION_PAGINA: Record<Pagina, string> = {
   dashboard: 'Principal',
   clientes: 'Comercial',
-  sectores: 'Comercial',
   cotizaciones: 'Comercial',
   productos: 'Catálogo',
-  proveedores: 'Catálogo',
   pagos: 'Finanzas',
   gastos: 'Finanzas',
   resultados: 'Finanzas',
   impuestos: 'Finanzas',
+  capital: 'Finanzas',
   configuracion: 'Sistema',
 };
 
@@ -339,17 +335,11 @@ function AppShell({
       case 'clientes':
         return <Clientes esAdmin={esAdmin} />;
 
-      case 'sectores':
-        return <Sectores esAdmin={esAdmin} />;
-
       case 'cotizaciones':
         return <Cotizaciones esAdmin={esAdmin} />;
 
       case 'productos':
         return <Productos esAdmin={esAdmin} />;
-
-      case 'proveedores':
-        return <Proveedores esAdmin={esAdmin} />;
 
       case 'pagos':
         return esAdmin ? <Pagos /> : null;
@@ -362,6 +352,9 @@ function AppShell({
 
       case 'impuestos':
         return esAdmin ? <Impuestos /> : null;
+
+      case 'capital':
+        return esAdmin ? <Capital /> : null;
 
       case 'configuracion':
         return esAdmin ? <Configuracion /> : null;
@@ -412,14 +405,6 @@ function AppShell({
           </button>
 
           <button
-            className={pagina === 'sectores' ? 'active' : ''}
-            onClick={() => setPagina('sectores')}
-          >
-            <span className="nav-icon">◈</span>
-            <span>Sectores</span>
-          </button>
-
-          <button
             className={pagina === 'cotizaciones' ? 'active' : ''}
             onClick={() => setPagina('cotizaciones')}
           >
@@ -438,14 +423,6 @@ function AppShell({
             <span>Productos</span>
           </button>
 
-          <button
-            className={pagina === 'proveedores' ? 'active' : ''}
-            onClick={() => setPagina('proveedores')}
-          >
-            <span className="nav-icon">▣</span>
-            <span>Proveedores</span>
-          </button>
-
           {esAdmin && (
             <>
               <div className="nav-divider" />
@@ -456,7 +433,7 @@ function AppShell({
                 onClick={() => setPagina('pagos')}
               >
                 <span className="nav-icon">$</span>
-                <span>Pagos</span>
+                <span>Pagado</span>
               </button>
 
               <button
@@ -481,6 +458,14 @@ function AppShell({
               >
                 <span className="nav-icon">%</span>
                 <span>Impuestos</span>
+              </button>
+
+              <button
+                className={pagina === 'capital' ? 'active' : ''}
+                onClick={() => setPagina('capital')}
+              >
+                <span className="nav-icon">◈</span>
+                <span>Capital de socios</span>
               </button>
 
               <div className="nav-divider" />

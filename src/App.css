@@ -1070,21 +1070,15 @@ th {
 }
 
 .quote-status-aceptada {
-  color: #10673a;
-
-  background: #e0f2e7;
-}
-
-.quote-status-rechazada {
-  color: #9a2e2e;
-
-  background: #fbe2e2;
-}
-
-.quote-status-modificada {
   color: #71570b;
 
   background: #fff0c8;
+}
+
+.quote-status-pagada {
+  color: #10673a;
+
+  background: #e0f2e7;
 }
 
 /* ============================================================
