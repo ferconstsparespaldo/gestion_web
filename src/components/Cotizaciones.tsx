@@ -24,7 +24,6 @@ type Producto = {
   id: string;
   nombre: string;
   descripcion: string | null;
-  imagen_url: string | null;
   precio: number;
   costo: number;
 };
@@ -242,7 +241,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
             id,
             nombre,
             descripcion,
-            imagen_url,
             precio,
             costo
           `
@@ -372,7 +370,7 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
       descripcion: producto.descripcion || '',
 
-      imagen_url: producto.imagen_url || '',
+      imagen_url: '',
 
       costo_unitario: Number(producto.costo || 0),
 
