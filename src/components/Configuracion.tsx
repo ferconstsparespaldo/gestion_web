@@ -13,19 +13,9 @@ type ConfiguracionForm = {
   correo: string;
   logo_url: string;
   iva_porcentaje: number;
-  vigencia_cotizacion_dias: number;
-  prefijo_cotizacion: string;
-  banco: string;
-  tipo_cuenta: string;
-  numero_cuenta: string;
-  titular: string;
-  rut_titular: string;
-  correo_pago: string;
-  valor_hora_defecto: number;
-  num_trabajadores_defecto: number;
 };
 
-type TabConfiguracion = 'empresa' | 'cotizaciones' | 'usuarios' | 'parametros';
+type TabConfiguracion = 'empresa' | 'usuarios' | 'parametros';
 type RolUsuario = 'admin' | 'trabajador';
 
 type UsuarioAdmin = {
@@ -55,16 +45,6 @@ const CONFIG_POR_DEFECTO: ConfiguracionForm = {
   correo: '',
   logo_url: STORAGE.logoUrlPorDefecto,
   iva_porcentaje: 19,
-  vigencia_cotizacion_dias: 15,
-  prefijo_cotizacion: 'COT',
-  banco: '',
-  tipo_cuenta: '',
-  numero_cuenta: '',
-  titular: '',
-  rut_titular: '',
-  correo_pago: '',
-  valor_hora_defecto: 0,
-  num_trabajadores_defecto: 1,
 };
 
 const USUARIO_VACIO: UsuarioForm = {
@@ -145,16 +125,6 @@ function Configuracion() {
         correo: data.correo || '',
         logo_url: data.logo_url || CONFIG_POR_DEFECTO.logo_url,
         iva_porcentaje: Number(data.iva_porcentaje ?? 19),
-        vigencia_cotizacion_dias: Number(data.vigencia_cotizacion_dias ?? 15),
-        prefijo_cotizacion: data.prefijo_cotizacion || 'COT',
-        banco: data.banco || '',
-        tipo_cuenta: data.tipo_cuenta || '',
-        numero_cuenta: data.numero_cuenta || '',
-        titular: data.titular || '',
-        rut_titular: data.rut_titular || '',
-        correo_pago: data.correo_pago || '',
-        valor_hora_defecto: Number(data.valor_hora_defecto ?? 0),
-        num_trabajadores_defecto: Number(data.num_trabajadores_defecto ?? 1),
       });
     } else {
       setConfigId(null);
@@ -232,16 +202,6 @@ function Configuracion() {
       correo: form.correo.trim() || null,
       logo_url: form.logo_url.trim() || null,
       iva_porcentaje: Number(form.iva_porcentaje),
-      vigencia_cotizacion_dias: Number(form.vigencia_cotizacion_dias),
-      prefijo_cotizacion: form.prefijo_cotizacion.trim() || 'COT',
-      banco: form.banco.trim() || null,
-      tipo_cuenta: form.tipo_cuenta.trim() || null,
-      numero_cuenta: form.numero_cuenta.trim() || null,
-      titular: form.titular.trim() || null,
-      rut_titular: form.rut_titular.trim() || null,
-      correo_pago: form.correo_pago.trim() || null,
-      valor_hora_defecto: Number(form.valor_hora_defecto) || 0,
-      num_trabajadores_defecto: Number(form.num_trabajadores_defecto) || 1,
     };
 
     if (configId) {
@@ -407,7 +367,7 @@ function Configuracion() {
           <p className="eyebrow">SISTEMA</p>
           <h1>Configuración</h1>
           <p className="module-description">
-            Empresa, cotizaciones, usuarios y parámetros generales.
+            Empresa, usuarios y parámetros generales.
           </p>
         </div>
       </div>
@@ -419,13 +379,6 @@ function Configuracion() {
           type="button"
         >
           Empresa
-        </button>
-        <button
-          className={tab === 'cotizaciones' ? 'active' : ''}
-          onClick={() => setTab('cotizaciones')}
-          type="button"
-        >
-          Cotizaciones
         </button>
         <button
           className={tab === 'usuarios' ? 'active' : ''}
@@ -538,126 +491,9 @@ function Configuracion() {
             </div>
           </div>
 
-          <div className="form-card">
-            <div className="config-section-heading">
-              <div>
-                <span>PAGOS</span>
-                <h2>Datos bancarios</h2>
-              </div>
-            </div>
-
-            <div className="form-grid">
-              <label>
-                Banco
-                <input
-                  value={form.banco}
-                  onChange={(event) => actualizarCampo('banco', event.target.value)}
-                />
-              </label>
-              <label>
-                Tipo de cuenta
-                <input
-                  value={form.tipo_cuenta}
-                  onChange={(event) =>
-                    actualizarCampo('tipo_cuenta', event.target.value)
-                  }
-                />
-              </label>
-              <label>
-                Número de cuenta
-                <input
-                  value={form.numero_cuenta}
-                  onChange={(event) =>
-                    actualizarCampo('numero_cuenta', event.target.value)
-                  }
-                />
-              </label>
-              <label>
-                Titular
-                <input
-                  value={form.titular}
-                  onChange={(event) => actualizarCampo('titular', event.target.value)}
-                />
-              </label>
-              <label>
-                RUT titular
-                <input
-                  value={form.rut_titular}
-                  onChange={(event) =>
-                    actualizarCampo('rut_titular', event.target.value)
-                  }
-                />
-              </label>
-              <label>
-                Correo para pagos
-                <input
-                  type="email"
-                  value={form.correo_pago}
-                  onChange={(event) =>
-                    actualizarCampo('correo_pago', event.target.value)
-                  }
-                />
-              </label>
-            </div>
-          </div>
-
           <div className="config-save-row">
             <button className="primary-button" type="submit" disabled={guardando}>
               {guardando ? 'Guardando...' : 'Guardar empresa'}
-            </button>
-          </div>
-        </form>
-      )}
-
-      {tab === 'cotizaciones' && (
-        <form onSubmit={guardarConfiguracion}>
-          <div className="form-card config-single-card">
-            <div className="config-section-heading">
-              <div>
-                <span>DOCUMENTOS</span>
-                <h2>Parámetros de cotización</h2>
-                <p>Valores que se cargan automáticamente al crear una cotización.</p>
-              </div>
-            </div>
-
-            <div className="form-grid">
-              <label>
-                Prefijo de cotización
-                <input
-                  value={form.prefijo_cotizacion}
-                  onChange={(event) =>
-                    actualizarCampo('prefijo_cotizacion', event.target.value)
-                  }
-                  placeholder="COT"
-                />
-              </label>
-              <label>
-                Vigencia por defecto (días)
-                <input
-                  type="number"
-                  min="1"
-                  value={form.vigencia_cotizacion_dias}
-                  onChange={(event) =>
-                    actualizarCampo(
-                      'vigencia_cotizacion_dias',
-                      Number(event.target.value)
-                    )
-                  }
-                />
-              </label>
-            </div>
-
-            <div className="config-preview-note">
-              <strong>Ejemplo de numeración</strong>
-              <span>
-                {(form.prefijo_cotizacion || 'COT').toUpperCase()}-{new Date().getFullYear()}-0001
-              </span>
-            </div>
-          </div>
-
-          <div className="config-save-row">
-            <button className="primary-button" type="submit" disabled={guardando}>
-              {guardando ? 'Guardando...' : 'Guardar cotizaciones'}
             </button>
           </div>
         </form>
@@ -695,49 +531,6 @@ function Configuracion() {
                 Este porcentaje se utiliza en cotizaciones, gastos y cálculos internos.
                 Modificarlo afectará los documentos nuevos, no reescribe registros históricos.
               </p>
-            </div>
-          </div>
-
-          <div className="form-card config-single-card">
-            <div className="config-section-heading">
-              <div>
-                <span>MANO DE OBRA</span>
-                <h2>Horario y valor hora</h2>
-                <p>
-                  Valores que se cargan automáticamente al agregar el bloque de mano de
-                  obra en una cotización nueva (puedes ajustarlos en cada cotización).
-                </p>
-              </div>
-            </div>
-
-            <div className="form-grid">
-              <label>
-                Valor hora por defecto
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={form.valor_hora_defecto}
-                  onChange={(event) =>
-                    actualizarCampo('valor_hora_defecto', Number(event.target.value))
-                  }
-                />
-              </label>
-              <label>
-                N° de trabajadores por defecto
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={form.num_trabajadores_defecto}
-                  onChange={(event) =>
-                    actualizarCampo(
-                      'num_trabajadores_defecto',
-                      Number(event.target.value)
-                    )
-                  }
-                />
-              </label>
             </div>
           </div>
 
@@ -798,7 +591,7 @@ function Configuracion() {
               <div>
                 <strong>Trabajador</strong>
                 <p>
-                  Acceso a Dashboard comercial, Clientes, Cotizaciones, Productos y Proveedores.
+                  Acceso a Dashboard comercial, Clientes, Cotizaciones y Productos.
                 </p>
               </div>
             </div>

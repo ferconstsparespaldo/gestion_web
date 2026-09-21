@@ -5,27 +5,15 @@ import { fechaLocalISO } from '../utils/fecha';
 import { formatearMonto, formatearFecha } from '../utils/formato';
 import './Finanzas.css';
 
-type TabPago = 'movimientos' | 'cobrar' | 'pagar';
-type TipoPago = 'cliente' | 'proveedor';
+type TabPago = 'movimientos' | 'cobrar';
 
 type Cotizacion = {
   id: string;
   numero: string;
   fecha: string;
-  estado: 'Borrador' | 'Modificada' | 'Aceptada' | 'Rechazada';
+  estado: 'Aceptada' | 'Pagada';
   cliente_razon_social: string;
   total_final: number;
-};
-
-type Proveedor = {
-  id: string;
-  razon_social: string;
-};
-
-type CotizacionItem = {
-  cotizacion_id: string;
-  proveedor_id: string | null;
-  costo_total: number;
 };
 
 type PagoCliente = {
@@ -44,35 +32,14 @@ type PagoCliente = {
   } | null;
 };
 
-type PagoProveedor = {
-  id: string;
-  cotizacion_id: string | null;
-  proveedor_id: string | null;
-  fecha: string;
-  monto: number;
-  numero_documento: string | null;
-  metodo_pago: string | null;
-  referencia: string | null;
-  observaciones: string | null;
-  created_at: string;
-  cotizaciones: {
-    numero: string;
-  } | null;
-  proveedores: {
-    razon_social: string;
-  } | null;
-};
-
 type Movimiento = {
   id: string;
-  tipo: 'Ingreso' | 'Egreso';
   fecha: string;
   relacionado: string;
   documento: string;
   metodo: string;
   referencia: string;
   monto: number;
-  origen: 'cliente' | 'proveedor';
 };
 
 type PorCobrar = {
@@ -85,38 +52,21 @@ type PorCobrar = {
   saldo: number;
 };
 
-type PorPagar = {
-  key: string;
-  cotizacion_id: string;
-  numero: string;
-  proveedor_id: string;
-  proveedor: string;
-  costo: number;
-  pagado: number;
-  saldo: number;
-};
-
 const HOY = fechaLocalISO();
 
 function Pagos() {
   const [tab, setTab] = useState<TabPago>('movimientos');
 
   const [pagosClientes, setPagosClientes] = useState<PagoCliente[]>([]);
-  const [pagosProveedores, setPagosProveedores] = useState<PagoProveedor[]>([]);
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
-  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
-  const [itemsCotizacion, setItemsCotizacion] = useState<CotizacionItem[]>([]);
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [tipoPago, setTipoPago] = useState<TipoPago>('cliente');
   const [fecha, setFecha] = useState(HOY);
   const [monto, setMonto] = useState('');
   const [metodoPago, setMetodoPago] = useState('Transferencia');
   const [referencia, setReferencia] = useState('');
-  const [numeroDocumento, setNumeroDocumento] = useState('');
   const [observaciones, setObservaciones] = useState('');
   const [cotizacionId, setCotizacionId] = useState('');
-  const [proveedorId, setProveedorId] = useState('');
 
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
@@ -132,13 +82,7 @@ function Pagos() {
     setLoading(true);
     setError('');
 
-    const [
-      pagosClientesResult,
-      pagosProveedoresResult,
-      cotizacionesResult,
-      proveedoresResult,
-      itemsResult,
-    ] = await Promise.all([
+    const [pagosClientesResult, cotizacionesResult] = await Promise.all([
       supabase
         .from('pagos_clientes')
         .select(
@@ -162,31 +106,6 @@ function Pagos() {
         .order('created_at', { ascending: false }),
 
       supabase
-        .from('pagos_proveedores')
-        .select(
-          `
-          id,
-          cotizacion_id,
-          proveedor_id,
-          fecha,
-          monto,
-          numero_documento,
-          metodo_pago,
-          referencia,
-          observaciones,
-          created_at,
-          cotizaciones (
-            numero
-          ),
-          proveedores (
-            razon_social
-          )
-        `
-        )
-        .order('fecha', { ascending: false })
-        .order('created_at', { ascending: false }),
-
-      supabase
         .from('cotizaciones')
         .select(
           `
@@ -198,18 +117,8 @@ function Pagos() {
           total_final
         `
         )
-        .eq('estado', 'Aceptada')
+        .in('estado', ['Aceptada', 'Pagada'])
         .order('fecha', { ascending: false }),
-
-      supabase
-        .from('proveedores')
-        .select('id, razon_social')
-        .eq('activo', true)
-        .order('razon_social'),
-
-      supabase
-        .from('cotizacion_items')
-        .select('cotizacion_id, proveedor_id, costo_total'),
     ]);
 
     if (pagosClientesResult.error) {
@@ -220,30 +129,10 @@ function Pagos() {
       );
     }
 
-    if (pagosProveedoresResult.error) {
-      setError(pagosProveedoresResult.error.message);
-    } else {
-      setPagosProveedores(
-        (pagosProveedoresResult.data || []) as unknown as PagoProveedor[]
-      );
-    }
-
     if (cotizacionesResult.error) {
       setError(cotizacionesResult.error.message);
     } else {
       setCotizaciones((cotizacionesResult.data || []) as Cotizacion[]);
-    }
-
-    if (proveedoresResult.error) {
-      setError(proveedoresResult.error.message);
-    } else {
-      setProveedores((proveedoresResult.data || []) as Proveedor[]);
-    }
-
-    if (itemsResult.error) {
-      setError(itemsResult.error.message);
-    } else {
-      setItemsCotizacion((itemsResult.data || []) as CotizacionItem[]);
     }
 
     setLoading(false);
@@ -272,100 +161,19 @@ function Pagos() {
       .sort((a, b) => b.saldo - a.saldo);
   }, [cotizaciones, pagosClientes]);
 
-  const porPagar = useMemo<PorPagar[]>(() => {
-    const cotizacionesPorId = new Map<string, Cotizacion>(
-      cotizaciones.map((c) => [c.id, c] as [string, Cotizacion])
-    );
-    const proveedoresPorId = new Map<string, string>(
-      proveedores.map((p) => [p.id, p.razon_social] as [string, string])
-    );
-
-    const agrupado = new Map<
-      string,
-      {
-        cotizacion_id: string;
-        proveedor_id: string;
-        costo: number;
-      }
-    >();
-
-    itemsCotizacion.forEach((item) => {
-      if (!item.proveedor_id || !cotizacionesPorId.has(item.cotizacion_id)) {
-        return;
-      }
-
-      const key = `${item.cotizacion_id}__${item.proveedor_id}`;
-      const actual = agrupado.get(key);
-
-      if (actual) {
-        actual.costo += Number(item.costo_total || 0);
-      } else {
-        agrupado.set(key, {
-          cotizacion_id: item.cotizacion_id,
-          proveedor_id: item.proveedor_id,
-          costo: Number(item.costo_total || 0),
-        });
-      }
-    });
-
-    return Array.from(agrupado.entries())
-      .map(([key, grupo]) => {
-        const cotizacion = cotizacionesPorId.get(grupo.cotizacion_id);
-
-        const pagado = pagosProveedores
-          .filter(
-            (pago) =>
-              pago.cotizacion_id === grupo.cotizacion_id &&
-              pago.proveedor_id === grupo.proveedor_id
-          )
-          .reduce((total, pago) => total + Number(pago.monto || 0), 0);
-
-        return {
-          key,
-          cotizacion_id: grupo.cotizacion_id,
-          numero: cotizacion?.numero || '',
-          proveedor_id: grupo.proveedor_id,
-          proveedor:
-            proveedoresPorId.get(grupo.proveedor_id) || 'Proveedor sin nombre',
-          costo: grupo.costo,
-          pagado,
-          saldo: Math.max(0, grupo.costo - pagado),
-        };
-      })
-      .filter((fila) => fila.saldo > 0.5)
-      .sort((a, b) => b.saldo - a.saldo);
-  }, [cotizaciones, proveedores, itemsCotizacion, pagosProveedores]);
-
   const movimientos = useMemo<Movimiento[]>(() => {
-    const ingresos: Movimiento[] = pagosClientes.map((pago) => ({
-      id: pago.id,
-      tipo: 'Ingreso',
-      fecha: pago.fecha,
-      relacionado: pago.cotizaciones?.cliente_razon_social || 'Cliente',
-      documento: pago.cotizaciones?.numero || '',
-      metodo: pago.metodo_pago || 'Sin especificar',
-      referencia: pago.referencia || '',
-      monto: Number(pago.monto || 0),
-      origen: 'cliente',
-    }));
-
-    const egresos: Movimiento[] = pagosProveedores.map((pago) => ({
-      id: pago.id,
-      tipo: 'Egreso',
-      fecha: pago.fecha,
-      relacionado: pago.proveedores?.razon_social || 'Proveedor',
-      documento:
-        pago.cotizaciones?.numero || pago.numero_documento || 'Sin documento',
-      metodo: pago.metodo_pago || 'Sin especificar',
-      referencia: pago.referencia || '',
-      monto: Number(pago.monto || 0),
-      origen: 'proveedor',
-    }));
-
-    return [...ingresos, ...egresos].sort((a, b) =>
-      `${b.fecha}-${b.id}`.localeCompare(`${a.fecha}-${a.id}`)
-    );
-  }, [pagosClientes, pagosProveedores]);
+    return pagosClientes
+      .map((pago) => ({
+        id: pago.id,
+        fecha: pago.fecha,
+        relacionado: pago.cotizaciones?.cliente_razon_social || 'Cliente',
+        documento: pago.cotizaciones?.numero || '',
+        metodo: pago.metodo_pago || 'Sin especificar',
+        referencia: pago.referencia || '',
+        monto: Number(pago.monto || 0),
+      }))
+      .sort((a, b) => `${b.fecha}-${b.id}`.localeCompare(`${a.fecha}-${a.id}`));
+  }, [pagosClientes]);
 
   const movimientosFiltrados = useMemo(() => {
     const termino = busqueda.trim().toLowerCase();
@@ -376,7 +184,6 @@ function Pagos() {
 
     return movimientos.filter((movimiento) =>
       [
-        movimiento.tipo,
         movimiento.relacionado,
         movimiento.documento,
         movimiento.metodo,
@@ -394,23 +201,9 @@ function Pagos() {
     [pagosClientes]
   );
 
-  const totalEgresos = useMemo(
-    () =>
-      pagosProveedores.reduce(
-        (total, pago) => total + Number(pago.monto || 0),
-        0
-      ),
-    [pagosProveedores]
-  );
-
   const totalPorCobrar = useMemo(
     () => porCobrar.reduce((total, fila) => total + fila.saldo, 0),
     [porCobrar]
-  );
-
-  const totalPorPagar = useMemo(
-    () => porPagar.reduce((total, fila) => total + fila.saldo, 0),
-    [porPagar]
   );
 
   const saldoCotizacionIngreso = useMemo(() => {
@@ -419,45 +212,13 @@ function Pagos() {
     );
   }, [porCobrar, cotizacionId]);
 
-  const saldoProveedorSeleccionado = useMemo(() => {
-    if (!cotizacionId || !proveedorId) {
-      return null;
-    }
-
-    return (
-      porPagar.find(
-        (fila) =>
-          fila.cotizacion_id === cotizacionId &&
-          fila.proveedor_id === proveedorId
-      )?.saldo ?? 0
-    );
-  }, [porPagar, cotizacionId, proveedorId]);
-
-  const proveedoresCotizacionSeleccionada = useMemo(() => {
-    if (!cotizacionId) {
-      return proveedores;
-    }
-
-    const ids = new Set(
-      itemsCotizacion
-        .filter((item) => item.cotizacion_id === cotizacionId)
-        .map((item) => item.proveedor_id)
-        .filter(Boolean) as string[]
-    );
-
-    return proveedores.filter((proveedor) => ids.has(proveedor.id));
-  }, [cotizacionId, itemsCotizacion, proveedores]);
-
-  function abrirFormulario(tipo: TipoPago) {
-    setTipoPago(tipo);
+  function abrirFormulario() {
     setFecha(HOY);
     setMonto('');
     setMetodoPago('Transferencia');
     setReferencia('');
-    setNumeroDocumento('');
     setObservaciones('');
     setCotizacionId('');
-    setProveedorId('');
     setError('');
     setMensaje('');
     setMostrarFormulario(true);
@@ -473,38 +234,15 @@ function Pagos() {
       return;
     }
 
-    if (tipoPago === 'cliente' && !cotizacionId) {
+    if (!cotizacionId) {
       setError('Debes seleccionar una cotización.');
       return;
     }
 
-    if (
-      tipoPago === 'cliente' &&
-      saldoCotizacionIngreso > 0 &&
-      montoNumero > saldoCotizacionIngreso + 0.5
-    ) {
+    if (saldoCotizacionIngreso > 0 && montoNumero > saldoCotizacionIngreso + 0.5) {
       setError(
         `El monto supera el saldo pendiente de ${formatoDinero(
           saldoCotizacionIngreso
-        )}.`
-      );
-      return;
-    }
-
-    if (tipoPago === 'proveedor' && !proveedorId) {
-      setError('Debes seleccionar un proveedor.');
-      return;
-    }
-
-    if (
-      tipoPago === 'proveedor' &&
-      cotizacionId &&
-      saldoProveedorSeleccionado !== null &&
-      montoNumero > saldoProveedorSeleccionado + 0.5
-    ) {
-      setError(
-        `El monto supera el saldo pendiente con este proveedor de ${formatoDinero(
-          saldoProveedorSeleccionado
         )}.`
       );
       return;
@@ -518,40 +256,20 @@ function Pagos() {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (tipoPago === 'cliente') {
-      const { error } = await supabase.from('pagos_clientes').insert({
-        cotizacion_id: cotizacionId,
-        fecha,
-        monto: montoNumero,
-        metodo_pago: metodoPago || null,
-        referencia: referencia.trim() || null,
-        observaciones: observaciones.trim() || null,
-        created_by: user?.id || null,
-      });
+    const { error } = await supabase.from('pagos_clientes').insert({
+      cotizacion_id: cotizacionId,
+      fecha,
+      monto: montoNumero,
+      metodo_pago: metodoPago || null,
+      referencia: referencia.trim() || null,
+      observaciones: observaciones.trim() || null,
+      created_by: user?.id || null,
+    });
 
-      if (error) {
-        setError(error.message);
-        setGuardando(false);
-        return;
-      }
-    } else {
-      const { error } = await supabase.from('pagos_proveedores').insert({
-        cotizacion_id: cotizacionId || null,
-        proveedor_id: proveedorId,
-        fecha,
-        monto: montoNumero,
-        numero_documento: numeroDocumento.trim() || null,
-        metodo_pago: metodoPago || null,
-        referencia: referencia.trim() || null,
-        observaciones: observaciones.trim() || null,
-        created_by: user?.id || null,
-      });
-
-      if (error) {
-        setError(error.message);
-        setGuardando(false);
-        return;
-      }
+    if (error) {
+      setError(error.message);
+      setGuardando(false);
+      return;
     }
 
     await cargarDatos();
@@ -563,20 +281,15 @@ function Pagos() {
 
   async function eliminarMovimiento(movimiento: Movimiento) {
     const confirmado = window.confirm(
-      `¿Eliminar este ${movimiento.tipo.toLowerCase()} por ${formatoDinero(
-        movimiento.monto
-      )}?`
+      `¿Eliminar este ingreso por ${formatoDinero(movimiento.monto)}?`
     );
 
     if (!confirmado) {
       return;
     }
 
-    const tabla =
-      movimiento.origen === 'cliente' ? 'pagos_clientes' : 'pagos_proveedores';
-
     const { error } = await supabase
-      .from(tabla)
+      .from('pagos_clientes')
       .delete()
       .eq('id', movimiento.id);
 
@@ -590,15 +303,8 @@ function Pagos() {
   }
 
   function registrarCobro(fila: PorCobrar) {
-    abrirFormulario('cliente');
+    abrirFormulario();
     setCotizacionId(fila.cotizacion_id);
-    setMonto(String(Math.round(fila.saldo)));
-  }
-
-  function registrarPagoProveedor(fila: PorPagar) {
-    abrirFormulario('proveedor');
-    setCotizacionId(fila.cotizacion_id);
-    setProveedorId(fila.proveedor_id);
     setMonto(String(Math.round(fila.saldo)));
   }
 
@@ -623,25 +329,14 @@ function Pagos() {
       <div className="module-header finance-module-header">
         <div>
           <p className="eyebrow">FINANZAS</p>
-          <h1>Pagos</h1>
+          <h1>Pagado</h1>
           <p className="module-description">
-            Control de ingresos recibidos, pagos a proveedores y saldos
-            pendientes.
+            Control de ingresos recibidos y saldos pendientes.
           </p>
         </div>
 
         <div className="finance-header-actions">
-          <button
-            className="secondary-button"
-            onClick={() => abrirFormulario('proveedor')}
-          >
-            Registrar egreso
-          </button>
-
-          <button
-            className="primary-button"
-            onClick={() => abrirFormulario('cliente')}
-          >
+          <button className="primary-button" onClick={() => abrirFormulario()}>
             + Registrar ingreso
           </button>
         </div>
@@ -657,18 +352,8 @@ function Pagos() {
         </div>
 
         <div className="finance-kpi-card">
-          <span>Pagos a proveedores</span>
-          <strong>{formatoDinero(totalEgresos)}</strong>
-        </div>
-
-        <div className="finance-kpi-card">
           <span>Por cobrar</span>
           <strong>{formatoDinero(totalPorCobrar)}</strong>
-        </div>
-
-        <div className="finance-kpi-card">
-          <span>Por pagar productos</span>
-          <strong>{formatoDinero(totalPorPagar)}</strong>
         </div>
       </div>
 
@@ -677,11 +362,7 @@ function Pagos() {
           <div className="finance-form-title">
             <div>
               <p className="eyebrow">NUEVO MOVIMIENTO</p>
-              <h2>
-                {tipoPago === 'cliente'
-                  ? 'Pago recibido de cliente'
-                  : 'Pago realizado a proveedor'}
-              </h2>
+              <h2>Pago recibido de cliente</h2>
             </div>
 
             <button
@@ -694,32 +375,6 @@ function Pagos() {
           </div>
 
           <form onSubmit={guardarPago}>
-            <div className="finance-type-selector">
-              <button
-                type="button"
-                className={tipoPago === 'cliente' ? 'active' : ''}
-                onClick={() => {
-                  setTipoPago('cliente');
-                  setCotizacionId('');
-                  setProveedorId('');
-                }}
-              >
-                Ingreso de cliente
-              </button>
-
-              <button
-                type="button"
-                className={tipoPago === 'proveedor' ? 'active' : ''}
-                onClick={() => {
-                  setTipoPago('proveedor');
-                  setCotizacionId('');
-                  setProveedorId('');
-                }}
-              >
-                Pago a proveedor
-              </button>
-            </div>
-
             <div className="form-grid">
               <label>
                 Fecha
@@ -743,67 +398,23 @@ function Pagos() {
                 />
               </label>
 
-              {tipoPago === 'cliente' ? (
-                <label className="full-width">
-                  Cotización *
-                  <select
-                    value={cotizacionId}
-                    onChange={(event) => setCotizacionId(event.target.value)}
-                    required
-                  >
-                    <option value="">Seleccionar cotización</option>
+              <label className="full-width">
+                Cotización *
+                <select
+                  value={cotizacionId}
+                  onChange={(event) => setCotizacionId(event.target.value)}
+                  required
+                >
+                  <option value="">Seleccionar cotización</option>
 
-                    {porCobrar.map((fila) => (
-                      <option
-                        key={fila.cotizacion_id}
-                        value={fila.cotizacion_id}
-                      >
-                        {fila.numero} · {fila.cliente} · saldo{' '}
-                        {formatoDinero(fila.saldo)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : (
-                <>
-                  <label>
-                    Cotización relacionada
-                    <select
-                      value={cotizacionId}
-                      onChange={(event) => {
-                        setCotizacionId(event.target.value);
-                        setProveedorId('');
-                      }}
-                    >
-                      <option value="">Sin cotización</option>
-
-                      {cotizaciones.map((cotizacion) => (
-                        <option key={cotizacion.id} value={cotizacion.id}>
-                          {cotizacion.numero} ·{' '}
-                          {cotizacion.cliente_razon_social}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-
-                  <label>
-                    Proveedor *
-                    <select
-                      value={proveedorId}
-                      onChange={(event) => setProveedorId(event.target.value)}
-                      required
-                    >
-                      <option value="">Seleccionar proveedor</option>
-
-                      {proveedoresCotizacionSeleccionada.map((proveedor) => (
-                        <option key={proveedor.id} value={proveedor.id}>
-                          {proveedor.razon_social}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </>
-              )}
+                  {porCobrar.map((fila) => (
+                    <option key={fila.cotizacion_id} value={fila.cotizacion_id}>
+                      {fila.numero} · {fila.cliente} · saldo{' '}
+                      {formatoDinero(fila.saldo)}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
               <label>
                 Medio de pago
@@ -820,18 +431,7 @@ function Pagos() {
                 </select>
               </label>
 
-              {tipoPago === 'proveedor' && (
-                <label>
-                  N° documento
-                  <input
-                    value={numeroDocumento}
-                    onChange={(event) => setNumeroDocumento(event.target.value)}
-                    placeholder="Factura, boleta, OC..."
-                  />
-                </label>
-              )}
-
-              <label className={tipoPago === 'cliente' ? '' : 'full-width'}>
+              <label>
                 Referencia
                 <input
                   value={referencia}
@@ -850,22 +450,12 @@ function Pagos() {
               </label>
             </div>
 
-            {tipoPago === 'cliente' && cotizacionId && (
+            {cotizacionId && (
               <div className="finance-inline-note">
                 Saldo pendiente actual:{' '}
                 <strong>{formatoDinero(saldoCotizacionIngreso)}</strong>
               </div>
             )}
-
-            {tipoPago === 'proveedor' &&
-              cotizacionId &&
-              proveedorId &&
-              saldoProveedorSeleccionado !== null && (
-                <div className="finance-inline-note">
-                  Saldo pendiente con este proveedor:{' '}
-                  <strong>{formatoDinero(saldoProveedorSeleccionado)}</strong>
-                </div>
-              )}
 
             <div className="finance-form-actions">
               <button
@@ -903,14 +493,6 @@ function Pagos() {
           Por cobrar
           {porCobrar.length > 0 && <span>{porCobrar.length}</span>}
         </button>
-
-        <button
-          className={tab === 'pagar' ? 'active' : ''}
-          onClick={() => setTab('pagar')}
-        >
-          Por pagar
-          {porPagar.length > 0 && <span>{porPagar.length}</span>}
-        </button>
       </div>
 
       {tab === 'movimientos' && (
@@ -919,7 +501,7 @@ function Pagos() {
             <div>
               <h2>Movimientos</h2>
               <p className="module-description">
-                Cada fila representa dinero que efectivamente entró o salió.
+                Cada fila representa dinero que efectivamente entró.
               </p>
             </div>
 
@@ -936,7 +518,6 @@ function Pagos() {
               <thead>
                 <tr>
                   <th>Fecha</th>
-                  <th>Tipo</th>
                   <th>Relacionado</th>
                   <th>Documento</th>
                   <th>Medio</th>
@@ -948,19 +529,8 @@ function Pagos() {
 
               <tbody>
                 {movimientosFiltrados.map((movimiento) => (
-                  <tr key={`${movimiento.origen}-${movimiento.id}`}>
+                  <tr key={movimiento.id}>
                     <td>{formatoFecha(movimiento.fecha)}</td>
-                    <td>
-                      <span
-                        className={`finance-badge ${
-                          movimiento.tipo === 'Ingreso'
-                            ? 'finance-badge-success'
-                            : 'finance-badge-expense'
-                        }`}
-                      >
-                        {movimiento.tipo}
-                      </span>
-                    </td>
                     <td>{movimiento.relacionado}</td>
                     <td>{movimiento.documento || '—'}</td>
                     <td>{movimiento.metodo}</td>
@@ -981,7 +551,7 @@ function Pagos() {
 
                 {movimientosFiltrados.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="finance-empty">
+                    <td colSpan={7} className="finance-empty">
                       No hay movimientos registrados.
                     </td>
                   </tr>
@@ -1051,72 +621,6 @@ function Pagos() {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {tab === 'pagar' && (
-        <div className="form-card">
-          <div className="finance-list-header">
-            <div>
-              <h2>Cuentas por pagar</h2>
-              <p className="module-description">
-                Costos de proveedor asociados a cotizaciones aceptadas.
-              </p>
-            </div>
-          </div>
-
-          <div className="finance-table-wrap">
-            <table className="finance-table">
-              <thead>
-                <tr>
-                  <th>Cotización</th>
-                  <th>Proveedor</th>
-                  <th className="right">Costo</th>
-                  <th className="right">Pagado</th>
-                  <th className="right">Pendiente</th>
-                  <th />
-                </tr>
-              </thead>
-
-              <tbody>
-                {porPagar.map((fila) => (
-                  <tr key={fila.key}>
-                    <td>
-                      <strong>{fila.numero}</strong>
-                    </td>
-                    <td>{fila.proveedor}</td>
-                    <td className="right">{formatoDinero(fila.costo)}</td>
-                    <td className="right">{formatoDinero(fila.pagado)}</td>
-                    <td className="right">
-                      <strong>{formatoDinero(fila.saldo)}</strong>
-                    </td>
-                    <td className="right">
-                      <button
-                        className="finance-text-button"
-                        onClick={() => registrarPagoProveedor(fila)}
-                      >
-                        Registrar pago
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-
-                {porPagar.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="finance-empty">
-                      No hay costos de producto pendientes de pago.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <p className="finance-footnote">
-            Esta vista usa el costo neto guardado en los ítems de las
-            cotizaciones. Los gastos administrativos se controlan en el módulo
-            Gastos.
-          </p>
         </div>
       )}
     </div>

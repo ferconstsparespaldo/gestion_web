@@ -20,47 +20,31 @@ type Cliente = {
   correo: string | null;
 };
 
-type Proveedor = {
-  razon_social: string;
-};
-
-type Sector = {
-  id: string;
-  nombre: string;
-};
-
-type ProductoProveedor = {
-  id: string;
-  proveedor_id: string;
-  precio_neto_actual: number;
-  beneficio_sugerido: number;
-  proveedores: Proveedor | null;
-};
-
 type Producto = {
   id: string;
   nombre: string;
   descripcion: string | null;
-  producto_proveedor: ProductoProveedor[];
+  imagen_url: string | null;
+  precio: number;
+  costo: number;
 };
 
 type ItemCotizacion = {
   tempId: string;
 
   producto_id: string;
-  proveedor_id: string;
 
   nombre_producto: string;
   descripcion: string;
+  imagen_url: string;
 
-  precio_neto_proveedor: number;
-  beneficio_unitario: number;
+  costo_unitario: number;
   precio_neto_venta: number;
 
   cantidad: number;
 };
 
-type EstadoCotizacion = 'Borrador' | 'Modificada' | 'Aceptada' | 'Rechazada';
+type EstadoCotizacion = 'Aceptada' | 'Pagada';
 
 type CotizacionListado = {
   id: string;
@@ -84,13 +68,12 @@ function itemVacio(): ItemCotizacion {
     tempId: crypto.randomUUID(),
 
     producto_id: '',
-    proveedor_id: '',
 
     nombre_producto: '',
     descripcion: '',
+    imagen_url: '',
 
-    precio_neto_proveedor: 0,
-    beneficio_unitario: 0,
+    costo_unitario: 0,
     precio_neto_venta: 0,
 
     cantidad: 1,
@@ -103,8 +86,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
   const [clientes, setClientes] = useState<Cliente[]>([]);
 
   const [productos, setProductos] = useState<Producto[]>([]);
-
-  const [sectores, setSectores] = useState<Sector[]>([]);
 
   const { empresa } = useEmpresa();
   const ivaPorcentaje = empresa.ivaPorcentaje;
@@ -123,30 +104,12 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
   const [fecha, setFecha] = useState(fechaLocalISO());
 
-  const [estado, setEstado] = useState<EstadoCotizacion>('Borrador');
-
-  const [fechaFactura, setFechaFactura] = useState('');
-  const [guardandoFechaFactura, setGuardandoFechaFactura] = useState(false);
+  const [estado, setEstado] = useState<EstadoCotizacion>('Aceptada');
 
   const [clienteId, setClienteId] = useState('');
 
   const [clienteSeleccionado, setClienteSeleccionado] =
     useState<Cliente | null>(null);
-
-  const [sectorId, setSectorId] = useState('');
-  const [sectorNombre, setSectorNombre] = useState('');
-  const [numeroOrden, setNumeroOrden] = useState('');
-
-  const [fechaTrabajoInicio, setFechaTrabajoInicio] = useState(
-    fechaLocalISO()
-  );
-  const [fechaTrabajoTermino, setFechaTrabajoTermino] = useState('');
-
-  const [horaDesde, setHoraDesde] = useState('');
-  const [horaHasta, setHoraHasta] = useState('');
-  const [horasTrabajadas, setHorasTrabajadas] = useState(0);
-  const [numTrabajadores, setNumTrabajadores] = useState(0);
-  const [valorHora, setValorHora] = useState(0);
 
   const [vigenciaDias, setVigenciaDias] = useState(
     empresa.vigenciaCotizacionDias
@@ -168,7 +131,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
   const [error, setError] = useState('');
   const [mensajeEstado, setMensajeEstado] = useState('');
-  const [actualizandoEstado, setActualizandoEstado] = useState(false);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
 
   // La vista previa usa exactamente la misma hoja de 816 px que se exporta a PDF.
@@ -237,7 +199,7 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
     setLoading(true);
     setError('');
 
-    const [cotizacionesResult, clientesResult, sectoresResult, productosResult] =
+    const [cotizacionesResult, clientesResult, productosResult] =
       await Promise.all([
         supabase
           .from('cotizaciones')
@@ -274,27 +236,15 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
           .order('razon_social'),
 
         supabase
-          .from('sectores')
-          .select('id, nombre')
-          .eq('activo', true)
-          .order('nombre'),
-
-        supabase
           .from('productos')
           .select(
             `
             id,
             nombre,
             descripcion,
-            producto_proveedor (
-              id,
-              proveedor_id,
-              precio_neto_actual,
-              beneficio_sugerido,
-              proveedores (
-                razon_social
-              )
-            )
+            imagen_url,
+            precio,
+            costo
           `
           )
           .eq('activo', true)
@@ -311,12 +261,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
       setError(clientesResult.error.message);
     } else {
       setClientes((clientesResult.data || []) as Cliente[]);
-    }
-
-    if (sectoresResult.error) {
-      setError(sectoresResult.error.message);
-    } else {
-      setSectores((sectoresResult.data || []) as Sector[]);
     }
 
     if (productosResult.error) {
@@ -360,25 +304,10 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
     setFecha(fechaLocalISO());
 
-    setEstado('Borrador');
-
-    setFechaFactura('');
+    setEstado('Aceptada');
 
     setClienteId('');
     setClienteSeleccionado(null);
-
-    setSectorId('');
-    setSectorNombre('');
-    setNumeroOrden('');
-
-    setFechaTrabajoInicio(fechaLocalISO());
-    setFechaTrabajoTermino('');
-
-    setHoraDesde('');
-    setHoraHasta('');
-    setHorasTrabajadas(0);
-    setNumTrabajadores(empresa.numTrabajadoresDefecto);
-    setValorHora(empresa.valorHoraDefecto);
 
     setVigenciaDias(empresa.vigenciaCotizacionDias);
 
@@ -402,33 +331,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
     const cliente = clientes.find((cliente) => cliente.id === id) || null;
 
     setClienteSeleccionado(cliente);
-  }
-
-  function seleccionarSector(id: string) {
-    setSectorId(id);
-
-    const sector = sectores.find((sector) => sector.id === id) || null;
-
-    setSectorNombre(sector?.nombre || '');
-  }
-
-  function calcularHoras(desde: string, hasta: string) {
-    if (!desde || !hasta) {
-      return 0;
-    }
-
-    const [horaD, minD] = desde.split(':').map(Number);
-    const [horaH, minH] = hasta.split(':').map(Number);
-
-    const minutos = horaH * 60 + minH - (horaD * 60 + minD);
-
-    return minutos > 0 ? Math.round((minutos / 60) * 100) / 100 : 0;
-  }
-
-  function cambiarHorario(desde: string, hasta: string) {
-    setHoraDesde(desde);
-    setHoraHasta(hasta);
-    setHorasTrabajadas(calcularHoras(desde, hasta));
   }
 
   function agregarProducto() {
@@ -463,40 +365,24 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
       return;
     }
 
-    const relacion = producto.producto_proveedor?.[0];
-
-    const costo = Number(relacion?.precio_neto_actual || 0);
-
-    const beneficio = Number(relacion?.beneficio_sugerido || 0);
-
     actualizarItem(tempId, {
       producto_id: producto.id,
-
-      proveedor_id: relacion?.proveedor_id || '',
 
       nombre_producto: producto.nombre,
 
       descripcion: producto.descripcion || '',
 
-      precio_neto_proveedor: costo,
+      imagen_url: producto.imagen_url || '',
 
-      beneficio_unitario: beneficio,
+      costo_unitario: Number(producto.costo || 0),
 
-      precio_neto_venta: costo + beneficio,
+      precio_neto_venta: Number(producto.precio || 0),
     });
   }
 
   function cambiarPrecioVenta(tempId: string, precioVenta: number) {
-    const item = items.find((item) => item.tempId === tempId);
-
-    if (!item) {
-      return;
-    }
-
     actualizarItem(tempId, {
       precio_neto_venta: precioVenta,
-
-      beneficio_unitario: precioVenta - Number(item.precio_neto_proveedor || 0),
     });
   }
 
@@ -509,19 +395,9 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
     );
   }, [items]);
 
-  const costoHH = Math.max(
-    0,
-    Number(horasTrabajadas || 0) *
-      Number(numTrabajadores || 0) *
-      Number(valorHora || 0)
-  );
-
   const netoTotal = Math.max(
     0,
-    subtotalProductos +
-      Number(despachoNeto || 0) +
-      costoHH -
-      Number(descuentoNeto || 0)
+    subtotalProductos + Number(despachoNeto || 0) - Number(descuentoNeto || 0)
   );
 
   const iva = Math.round(netoTotal * (ivaPorcentaje / 100));
@@ -530,20 +406,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
   function formatoDinero(valor: number) {
     return formatearMonto(valor);
-  }
-
-  function fraseDiasTrabajo() {
-    if (!fechaTrabajoInicio) {
-      return '';
-    }
-
-    if (!fechaTrabajoTermino || fechaTrabajoTermino === fechaTrabajoInicio) {
-      return `el día ${formatoFecha(fechaTrabajoInicio)}`;
-    }
-
-    return `los días ${formatoFecha(fechaTrabajoInicio)} al ${formatoFecha(
-      fechaTrabajoTermino
-    )}`;
   }
 
   function formatoFecha(fechaISO: string) {
@@ -563,18 +425,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
   function validarCotizacion() {
     if (!clienteSeleccionado) {
       setError('Debes seleccionar un cliente.');
-
-      return false;
-    }
-
-    if (!sectorId) {
-      setError('Debes seleccionar un sector.');
-
-      return false;
-    }
-
-    if (!fechaTrabajoInicio) {
-      setError('Debes indicar la fecha en que se realizó el trabajo.');
 
       return false;
     }
@@ -604,16 +454,10 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
     setGuardando(true);
     setError('');
 
-    let estadoGuardar = estado;
-
-    if (cotizacionId && estado !== 'Aceptada' && estado !== 'Rechazada') {
-      estadoGuardar = 'Modificada';
-    }
-
     const datosCotizacion = {
       numero,
       fecha,
-      estado: estadoGuardar,
+      estado,
       cliente_id: clienteSeleccionado.id,
       cliente_razon_social: clienteSeleccionado.razon_social,
       cliente_rut: clienteSeleccionado.rut,
@@ -621,17 +465,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
       cliente_contacto: clienteSeleccionado.contacto,
       cliente_telefono: clienteSeleccionado.telefono,
       cliente_correo: clienteSeleccionado.correo,
-      sector_id: sectorId,
-      sector_nombre: sectorNombre,
-      numero_orden: numeroOrden.trim() || null,
-      fecha_trabajo_inicio: fechaTrabajoInicio || null,
-      fecha_trabajo_termino: fechaTrabajoTermino || null,
-      hora_desde: horaDesde || null,
-      hora_hasta: horaHasta || null,
-      horas_trabajadas: Number(horasTrabajadas || 0),
-      num_trabajadores: Number(numTrabajadores || 0),
-      valor_hora: Number(valorHora || 0),
-      costo_hh: costoHH,
       subtotal_productos_neto: subtotalProductos,
       despacho_neto: Number(despachoNeto || 0),
       descuento_neto: Number(descuentoNeto || 0),
@@ -645,16 +478,12 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
     const itemsGuardar = items.map((item) => ({
       producto_id: item.producto_id,
-      proveedor_id: item.proveedor_id || null,
       nombre_producto: item.nombre_producto,
       descripcion: item.descripcion || null,
+      imagen_url: item.imagen_url || null,
       cantidad: Number(item.cantidad),
-      precio_neto_proveedor: Number(item.precio_neto_proveedor),
-      beneficio_unitario: Number(item.beneficio_unitario),
+      costo_unitario: Number(item.costo_unitario),
       precio_neto_venta: Number(item.precio_neto_venta),
-      costo_total: Number(item.precio_neto_proveedor) * Number(item.cantidad),
-      beneficio_total: Number(item.beneficio_unitario) * Number(item.cantidad),
-      total_neto_linea: Number(item.precio_neto_venta) * Number(item.cantidad),
     }));
 
     const { data, error: guardarError } = await supabase.rpc(
@@ -677,7 +506,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
     const idFinal = String(data);
     setCotizacionId(idFinal);
-    setEstado(estadoGuardar);
 
     await cargarListadoCotizaciones();
     setGuardando(false);
@@ -757,8 +585,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
     setEstado(c.estado);
 
-    setFechaFactura(c.fecha_factura || '');
-
     setClienteId(c.cliente_id || '');
 
     setClienteSeleccionado({
@@ -777,19 +603,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
       correo: c.cliente_correo,
     });
 
-    setSectorId(c.sector_id || '');
-    setSectorNombre(c.sector_nombre || '');
-    setNumeroOrden(c.numero_orden || '');
-
-    setFechaTrabajoInicio(c.fecha_trabajo_inicio || '');
-    setFechaTrabajoTermino(c.fecha_trabajo_termino || '');
-
-    setHoraDesde(c.hora_desde ? String(c.hora_desde).slice(0, 5) : '');
-    setHoraHasta(c.hora_hasta ? String(c.hora_hasta).slice(0, 5) : '');
-    setHorasTrabajadas(Number(c.horas_trabajadas || 0));
-    setNumTrabajadores(Number(c.num_trabajadores || 0));
-    setValorHora(Number(c.valor_hora || 0));
-
     setVigenciaDias(
       Number(c.vigencia_dias || empresa.vigenciaCotizacionDias)
     );
@@ -805,17 +618,15 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
       producto_id: item.producto_id || '',
 
-      proveedor_id: item.proveedor_id || '',
-
       nombre_producto: item.nombre_producto || '',
 
       descripcion: item.descripcion || '',
 
+      imagen_url: item.imagen_url || '',
+
       cantidad: Number(item.cantidad || 1),
 
-      precio_neto_proveedor: Number(item.precio_neto_proveedor || 0),
-
-      beneficio_unitario: Number(item.beneficio_unitario || 0),
+      costo_unitario: Number(item.costo_unitario || 0),
 
       precio_neto_venta: Number(item.precio_neto_venta || 0),
     }));
@@ -827,82 +638,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
     setMostrarPreview(false);
 
     setLoading(false);
-  }
-
-  async function cambiarEstado(nuevoEstado: 'Aceptada' | 'Rechazada') {
-    if (!cotizacionId || actualizandoEstado) {
-      return;
-    }
-
-    setActualizandoEstado(true);
-    setError('');
-    setMensajeEstado('');
-
-    const actualizacion: Record<string, string> = {
-      estado: nuevoEstado,
-    };
-
-    if (nuevoEstado === 'Aceptada') {
-      actualizacion.fecha_aceptacion = fechaLocalISO();
-    }
-
-    const { error } = await supabase
-      .from('cotizaciones')
-      .update(actualizacion)
-      .eq('id', cotizacionId);
-
-    if (error) {
-      setError(error.message);
-      setActualizandoEstado(false);
-      return;
-    }
-
-    setEstado(nuevoEstado);
-    await cargarListadoCotizaciones();
-
-    setMensajeEstado(
-      nuevoEstado === 'Aceptada'
-        ? `La cotización ${numero} fue marcada como Aceptada correctamente.`
-        : `La cotización ${numero} fue marcada como Rechazada correctamente.`
-    );
-
-    setActualizandoEstado(false);
-
-    window.setTimeout(() => {
-      setMensajeEstado('');
-    }, 4500);
-  }
-
-  async function guardarFechaFactura() {
-    if (!cotizacionId || guardandoFechaFactura) {
-      return;
-    }
-
-    setGuardandoFechaFactura(true);
-    setError('');
-
-    const { error } = await supabase
-      .from('cotizaciones')
-      .update({ fecha_factura: fechaFactura || null })
-      .eq('id', cotizacionId);
-
-    if (error) {
-      setError(error.message);
-      setGuardandoFechaFactura(false);
-      return;
-    }
-
-    setMensajeEstado(
-      fechaFactura
-        ? `Fecha de factura guardada: ${fechaFactura}.`
-        : 'Fecha de factura eliminada.'
-    );
-
-    setGuardandoFechaFactura(false);
-
-    window.setTimeout(() => {
-      setMensajeEstado('');
-    }, 4500);
   }
 
   async function esperarImagenes(elemento: HTMLElement, timeoutMs = 4000) {
@@ -1094,11 +829,7 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
       const alturaExportacion = paginaExportacion.scrollHeight;
 
-      // Chrome/Edge crean automáticamente subcarpetas dentro de Descargas
-      // cuando el nombre de archivo sugerido incluye "/", por lo que cada
-      // PDF queda guardado en una carpeta por mes sin pedir permisos extra.
-      const carpetaMes = fecha ? fecha.slice(0, 7) : fechaLocalISO().slice(0, 7);
-      const nombreArchivo = `${carpetaMes}/${numero.trim() || 'Cotizacion'}.pdf`;
+      const nombreArchivo = `${numero.trim() || 'Cotizacion'}.pdf`;
 
       const opciones = {
         margin: 0,
@@ -1350,35 +1081,13 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
                   </div>
                 </section>
 
-                <section className="quote-section">
-                  <div className="quote-section-title">DATOS DEL TRABAJO</div>
-
-                  <div className="quote-client-grid">
-                    <div>
-                      <small>Sector</small>
-
-                      <strong>{sectorNombre || '—'}</strong>
-                    </div>
-
-                    <div>
-                      <small>N° de Orden</small>
-
-                      <strong>{numeroOrden || '—'}</strong>
-                    </div>
-
-                    <div>
-                      <small>Día(s) trabajado(s)</small>
-
-                      <strong>{fraseDiasTrabajo() || '—'}</strong>
-                    </div>
-                  </div>
-                </section>
-
                 <section className="quote-section quote-products-section">
                   <div className="quote-section-title">PRODUCTOS</div>
 
                   <div className="quote-products-table">
                     <div className="quote-products-head">
+                      <div>Imagen</div>
+
                       <div>Producto y descripción</div>
 
                       <div>Cant.</div>
@@ -1390,6 +1099,17 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
                     {items.map((item) => (
                       <div className="quote-product-line" key={item.tempId}>
+                        <div className="quote-product-img-cell">
+                          {item.imagen_url ? (
+                            <img
+                              src={item.imagen_url}
+                              alt={item.nombre_producto}
+                            />
+                          ) : (
+                            <span>—</span>
+                          )}
+                        </div>
+
                         <div className="quote-product-info">
                           <strong>{item.nombre_producto}</strong>
 
@@ -1414,7 +1134,7 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
                 <section className="quote-bottom-section">
                   <div className="quote-observations-box">
-                    <div className="quote-section-title">DESCRIPCIÓN DEL TRABAJO</div>
+                    <div className="quote-section-title">OBSERVACIONES</div>
 
                     <div className="quote-observations-content">
                       {observaciones ? <p>{observaciones}</p> : <span>—</span>}
@@ -1428,17 +1148,9 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
                       <strong>{formatoDinero(subtotalProductos)}</strong>
                     </div>
 
-                    {costoHH > 0 && (
-                      <div>
-                        <span>Mano de obra (costo HH)</span>
-
-                        <strong>{formatoDinero(costoHH)}</strong>
-                      </div>
-                    )}
-
                     {despachoNeto > 0 && (
                       <div>
-                        <span>Costo traslado</span>
+                        <span>Despacho neto</span>
 
                         <strong>{formatoDinero(despachoNeto)}</strong>
                       </div>
@@ -1533,35 +1245,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
         {error && <div className="error-message">{error}</div>}
 
-        {mensajeEstado && (
-          <div
-            className={`status-change-banner ${
-              estado === 'Aceptada'
-                ? 'status-change-banner-success'
-                : 'status-change-banner-danger'
-            }`}
-            role="status"
-          >
-            <div className="status-change-banner-icon">
-              {estado === 'Aceptada' ? '✓' : '!'}
-            </div>
-
-            <div>
-              <strong>Estado actualizado</strong>
-              <span>{mensajeEstado}</span>
-            </div>
-
-            <button
-              type="button"
-              className="status-change-banner-close"
-              onClick={() => setMensajeEstado('')}
-              aria-label="Cerrar mensaje"
-            >
-              ×
-            </button>
-          </div>
-        )}
-
         <div className="form-card">
           <div className="form-grid">
             <label>
@@ -1605,53 +1288,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
                 }
               />
             </label>
-
-            <label>
-              Sector *
-              <select
-                value={sectorId}
-                onChange={(event) => seleccionarSector(event.target.value)}
-              >
-                <option value="">Seleccionar sector</option>
-
-                {sectores.map((sector) => (
-                  <option key={sector.id} value={sector.id}>
-                    {sector.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label>
-              N° de Orden
-              <input
-                value={numeroOrden}
-                onChange={(event) => setNumeroOrden(event.target.value)}
-                placeholder="N° de orden de compra del cliente"
-              />
-            </label>
-
-            <label>
-              Día de inicio del trabajo *
-              <input
-                type="date"
-                value={fechaTrabajoInicio}
-                onChange={(event) =>
-                  setFechaTrabajoInicio(event.target.value)
-                }
-              />
-            </label>
-
-            <label>
-              Día de término (si duró más de un día)
-              <input
-                type="date"
-                value={fechaTrabajoTermino}
-                onChange={(event) =>
-                  setFechaTrabajoTermino(event.target.value)
-                }
-              />
-            </label>
           </div>
 
           {clienteSeleccionado && (
@@ -1663,74 +1299,6 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
               <span>Dirección: {clienteSeleccionado.direccion || '—'}</span>
             </div>
           )}
-        </div>
-
-        <div className="form-card">
-          <h2>Mano de obra</h2>
-
-          <div className="form-grid">
-            <label>
-              Hora desde
-              <input
-                type="time"
-                value={horaDesde}
-                onChange={(event) =>
-                  cambiarHorario(event.target.value, horaHasta)
-                }
-              />
-            </label>
-
-            <label>
-              Hora hasta
-              <input
-                type="time"
-                value={horaHasta}
-                onChange={(event) =>
-                  cambiarHorario(horaDesde, event.target.value)
-                }
-              />
-            </label>
-
-            <label>
-              Horas trabajadas
-              <input
-                type="number"
-                min="0"
-                step="0.25"
-                value={horasTrabajadas}
-                onChange={(event) =>
-                  setHorasTrabajadas(Number(event.target.value))
-                }
-              />
-            </label>
-
-            <label>
-              N° de trabajadores
-              <input
-                type="number"
-                min="0"
-                value={numTrabajadores}
-                onChange={(event) =>
-                  setNumTrabajadores(Number(event.target.value))
-                }
-              />
-            </label>
-
-            <label>
-              Valor hora
-              <input
-                type="number"
-                min="0"
-                value={valorHora}
-                onChange={(event) => setValorHora(Number(event.target.value))}
-              />
-            </label>
-
-            <label>
-              Costo HH (calculado)
-              <input value={formatoDinero(costoHH)} disabled />
-            </label>
-          </div>
         </div>
 
         {items.map((item, index) => (
@@ -1768,6 +1336,16 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
                 </select>
               </label>
 
+              {item.imagen_url && (
+                <div className="full-width">
+                  <img
+                    className="quote-editor-image"
+                    src={item.imagen_url}
+                    alt={item.nombre_producto}
+                  />
+                </div>
+              )}
+
               <label className="full-width">
                 Descripción
                 <textarea
@@ -1783,42 +1361,7 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
               </label>
 
               <label>
-                Precio neto proveedor
-                <input
-                  type="number"
-                  min="0"
-                  value={item.precio_neto_proveedor}
-                  onChange={(event) => {
-                    const costo = Number(event.target.value);
-
-                    actualizarItem(item.tempId, {
-                      precio_neto_proveedor: costo,
-
-                      precio_neto_venta: costo + item.beneficio_unitario,
-                    });
-                  }}
-                />
-              </label>
-
-              <label>
-                Beneficio por unidad
-                <input
-                  type="number"
-                  value={item.beneficio_unitario}
-                  onChange={(event) => {
-                    const beneficio = Number(event.target.value);
-
-                    actualizarItem(item.tempId, {
-                      beneficio_unitario: beneficio,
-
-                      precio_neto_venta: item.precio_neto_proveedor + beneficio,
-                    });
-                  }}
-                />
-              </label>
-
-              <label>
-                Precio neto venta
+                Precio unitario
                 <input
                   type="number"
                   min="0"
@@ -1848,14 +1391,17 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
               <span>
                 Costo interno:{' '}
                 <strong>
-                  {formatoDinero(item.precio_neto_proveedor * item.cantidad)}
+                  {formatoDinero(item.costo_unitario * item.cantidad)}
                 </strong>
               </span>
 
               <span>
                 Beneficio:{' '}
                 <strong>
-                  {formatoDinero(item.beneficio_unitario * item.cantidad)}
+                  {formatoDinero(
+                    (item.precio_neto_venta - item.costo_unitario) *
+                      item.cantidad
+                  )}
                 </strong>
               </span>
 
@@ -1881,7 +1427,7 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
 
           <div className="form-grid">
             <label>
-              Costo traslado
+              Despacho neto
               <input
                 type="number"
                 min="0"
@@ -1922,13 +1468,7 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
             </div>
 
             <div>
-              <span>Mano de obra (costo HH)</span>
-
-              <strong>{formatoDinero(costoHH)}</strong>
-            </div>
-
-            <div>
-              <span>Costo traslado</span>
+              <span>Despacho</span>
 
               <strong>{formatoDinero(despachoNeto)}</strong>
             </div>
@@ -1980,54 +1520,11 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
             <div className="quote-status-actions no-print">
               <span>Estado interno:</span>
 
-              <button
-                className={`secondary-button status-action-button status-action-accept ${
-                  estado === 'Aceptada' ? 'selected' : ''
-                }`}
-                disabled={actualizandoEstado || estado === 'Aceptada'}
-                onClick={() => cambiarEstado('Aceptada')}
+              <span
+                className={`quote-status quote-status-${estado.toLowerCase()}`}
               >
-                {actualizandoEstado
-                  ? 'Actualizando...'
-                  : estado === 'Aceptada'
-                  ? '✓ Aceptada'
-                  : 'Marcar como aceptada'}
-              </button>
-
-              <button
-                className={`secondary-button status-action-button status-action-reject ${
-                  estado === 'Rechazada' ? 'selected' : ''
-                }`}
-                disabled={actualizandoEstado || estado === 'Rechazada'}
-                onClick={() => cambiarEstado('Rechazada')}
-              >
-                {actualizandoEstado
-                  ? 'Actualizando...'
-                  : estado === 'Rechazada'
-                  ? 'Rechazada'
-                  : 'Marcar como rechazada'}
-              </button>
-            </div>
-          )}
-
-          {cotizacionId && estado === 'Aceptada' && (
-            <div className="quote-status-actions no-print">
-              <span>Fecha de factura (SII):</span>
-
-              <input
-                type="date"
-                value={fechaFactura}
-                onChange={(event) => setFechaFactura(event.target.value)}
-              />
-
-              <button
-                type="button"
-                className="secondary-button status-action-button"
-                disabled={guardandoFechaFactura}
-                onClick={guardarFechaFactura}
-              >
-                {guardandoFechaFactura ? 'Guardando...' : 'Guardar fecha de factura'}
-              </button>
+                {estado}
+              </span>
             </div>
           )}
         </div>
@@ -2071,13 +1568,9 @@ function Cotizaciones({ esAdmin }: CotizacionesProps) {
         >
           <option>Todos</option>
 
-          <option>Borrador</option>
-
-          <option>Modificada</option>
-
           <option>Aceptada</option>
 
-          <option>Rechazada</option>
+          <option>Pagada</option>
         </select>
       </div>
 

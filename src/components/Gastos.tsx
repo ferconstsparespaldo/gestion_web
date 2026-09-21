@@ -10,11 +10,6 @@ type Categoria = {
   nombre: string;
 };
 
-type Proveedor = {
-  id: string;
-  razon_social: string;
-};
-
 type TipoGasto = 'Operacional' | 'Socio';
 
 type Gasto = {
@@ -47,7 +42,6 @@ const MES_ACTUAL = HOY.slice(0, 7);
 function Gastos() {
   const [gastos, setGastos] = useState<Gasto[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
   const [ivaPorcentaje, setIvaPorcentaje] = useState(19);
 
   const [mes, setMes] = useState(MES_ACTUAL);
@@ -90,7 +84,7 @@ function Gastos() {
     setLoading(true);
     setError('');
 
-    const [gastosResult, categoriasResult, proveedoresResult, configResult] =
+    const [gastosResult, categoriasResult, configResult] =
       await Promise.all([
         supabase
           .from('gastos')
@@ -127,12 +121,6 @@ function Gastos() {
           .order('nombre'),
 
         supabase
-          .from('proveedores')
-          .select('id, razon_social')
-          .eq('activo', true)
-          .order('razon_social'),
-
-        supabase
           .from('configuracion_empresa')
           .select('iva_porcentaje')
           .limit(1)
@@ -149,12 +137,6 @@ function Gastos() {
       setError(categoriasResult.error.message);
     } else {
       setCategorias((categoriasResult.data || []) as Categoria[]);
-    }
-
-    if (proveedoresResult.error) {
-      setError(proveedoresResult.error.message);
-    } else {
-      setProveedores((proveedoresResult.data || []) as Proveedor[]);
     }
 
     if (!configResult.error && configResult.data) {
@@ -627,20 +609,10 @@ function Gastos() {
               <label className="full-width">
                 Proveedor / receptor
                 <input
-                  list="lista-proveedores-gastos"
                   value={proveedorReceptor}
                   onChange={(event) => setProveedorReceptor(event.target.value)}
-                  placeholder="Selecciona o escribe un nombre"
+                  placeholder="Escribe un nombre"
                 />
-
-                <datalist id="lista-proveedores-gastos">
-                  {proveedores.map((proveedor) => (
-                    <option
-                      key={proveedor.id}
-                      value={proveedor.razon_social}
-                    />
-                  ))}
-                </datalist>
               </label>
 
               <label>

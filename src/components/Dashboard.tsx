@@ -12,7 +12,6 @@ type DashboardProps = {
       | 'clientes'
       | 'cotizaciones'
       | 'productos'
-      | 'proveedores'
       | 'pagos'
       | 'gastos'
       | 'resultados'
@@ -54,7 +53,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
   const [pagosClientesTodos, setPagosClientesTodos] = useState<
     { cotizacion_id: string; monto: number }[]
   >([]);
-  const [pagosProveedoresMes, setPagosProveedoresMes] = useState<number[]>([]);
   const [gastosMes, setGastosMes] = useState<
     { monto_neto: number; monto_liquido: number; estado_pago: string; tipo: string }[]
   >([]);
@@ -74,8 +72,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
   const [pagosClientesMesAnterior, setPagosClientesMesAnterior] = useState<
     number[]
   >([]);
-  const [pagosProveedoresMesAnterior, setPagosProveedoresMesAnterior] =
-    useState<number[]>([]);
   const [impuestosCajaMesAnterior, setImpuestosCajaMesAnterior] = useState<
     { iva_pagado: number; ppm_pagado: number }[]
   >([]);
@@ -128,7 +124,7 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
             .select(
               'id, numero, fecha, fecha_aceptacion, estado, cliente_razon_social, neto_total, iva, total_final'
             )
-            .eq('estado', 'Aceptada')
+            .in('estado', ['Aceptada', 'Pagada'])
             .gte('fecha_aceptacion', inicio)
             .lt('fecha_aceptacion', siguiente),
 
@@ -137,7 +133,7 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
             .select(
               'id, numero, fecha, fecha_aceptacion, estado, cliente_razon_social, neto_total, iva, total_final'
             )
-            .eq('estado', 'Aceptada'),
+            .in('estado', ['Aceptada', 'Pagada']),
 
           supabase
             .from('cotizaciones')
@@ -199,12 +195,10 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
 
       setPagosClientesMes([]);
       setPagosClientesTodos([]);
-      setPagosProveedoresMes([]);
       setGastosMes([]);
       setImpuestoMes(null);
       setImpuestosCajaMes([]);
       setPagosClientesMesAnterior([]);
-      setPagosProveedoresMesAnterior([]);
       setImpuestosCajaMesAnterior([]);
       setGastosPagadosMesData([]);
       setGastosPagadosMesAnteriorData([]);
@@ -219,13 +213,11 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
       recientesResult,
       pagosClientesMesResult,
       pagosClientesTodosResult,
-      pagosProveedoresMesResult,
       gastosResult,
       impuestoMesResult,
       impuestosCajaResult,
       gastosPagadosMesResult,
       pagosClientesMesAnteriorResult,
-      pagosProveedoresMesAnteriorResult,
       impuestosCajaMesAnteriorResult,
       gastosPagadosMesAnteriorResult,
     ] = await Promise.all([
@@ -242,7 +234,7 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
         .select(
           'id, numero, fecha, fecha_aceptacion, estado, cliente_razon_social, neto_total, iva, total_final'
         )
-        .eq('estado', 'Aceptada')
+        .in('estado', ['Aceptada', 'Pagada'])
         .gte('fecha_aceptacion', inicio)
         .lt('fecha_aceptacion', siguiente),
 
@@ -251,7 +243,7 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
         .select(
           'id, numero, fecha, fecha_aceptacion, estado, cliente_razon_social, neto_total, iva, total_final'
         )
-        .eq('estado', 'Aceptada'),
+        .in('estado', ['Aceptada', 'Pagada']),
 
       supabase
         .from('cotizaciones')
@@ -268,12 +260,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
         .lt('fecha', siguiente),
 
       supabase.from('pagos_clientes').select('cotizacion_id, monto'),
-
-      supabase
-        .from('pagos_proveedores')
-        .select('monto')
-        .gte('fecha', inicio)
-        .lt('fecha', siguiente),
 
       supabase
         .from('gastos')
@@ -309,12 +295,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
         .lt('fecha', siguienteAnterior),
 
       supabase
-        .from('pagos_proveedores')
-        .select('monto')
-        .gte('fecha', inicioAnterior)
-        .lt('fecha', siguienteAnterior),
-
-      supabase
         .from('impuestos_mensuales')
         .select('iva_pagado, ppm_pagado')
         .gte('fecha_pago', inicioAnterior)
@@ -335,13 +315,11 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
       recientesResult.error,
       pagosClientesMesResult.error,
       pagosClientesTodosResult.error,
-      pagosProveedoresMesResult.error,
       gastosResult.error,
       impuestoMesResult.error,
       impuestosCajaResult.error,
       gastosPagadosMesResult.error,
       pagosClientesMesAnteriorResult.error,
-      pagosProveedoresMesAnteriorResult.error,
       impuestosCajaMesAnteriorResult.error,
       gastosPagadosMesAnteriorResult.error,
     ].filter(Boolean);
@@ -391,11 +369,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
         monto: Number(fila.monto || 0),
       }))
     );
-    setPagosProveedoresMes(
-      (pagosProveedoresMesResult.data || []).map((fila) =>
-        Number(fila.monto || 0)
-      )
-    );
     setGastosMes(
       (gastosResult.data || []).map((fila) => ({
         monto_neto: Number(fila.monto_neto || 0),
@@ -435,11 +408,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
         Number(fila.monto || 0)
       )
     );
-    setPagosProveedoresMesAnterior(
-      (pagosProveedoresMesAnteriorResult.data || []).map((fila) =>
-        Number(fila.monto || 0)
-      )
-    );
     setImpuestosCajaMesAnterior(
       (impuestosCajaMesAnteriorResult.data || []).map((fila) => ({
         iva_pagado: Number(fila.iva_pagado || 0),
@@ -458,11 +426,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
   const aceptadasMes = useMemo(
     () => cotizacionesAceptadasMes,
     [cotizacionesAceptadasMes]
-  );
-
-  const aceptadasDeCotizacionesEmitidasMes = useMemo(
-    () => cotizacionesMes.filter((fila) => fila.estado === 'Aceptada'),
-    [cotizacionesMes]
   );
 
   const ventasMes = useMemo(
@@ -495,11 +458,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
   const cobradoMes = useMemo(
     () => pagosClientesMes.reduce((total, valor) => total + valor, 0),
     [pagosClientesMes]
-  );
-
-  const pagosProveedorMes = useMemo(
-    () => pagosProveedoresMes.reduce((total, valor) => total + valor, 0),
-    [pagosProveedoresMes]
   );
 
   // Las compras de socio (tipo 'Socio') solo aportan crédito de IVA; no son
@@ -542,20 +500,13 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
   );
 
   const flujoMes = useMemo(
-    () =>
-      cobradoMes - pagosProveedorMes - gastosPagadosMes - impuestosPagadosCaja,
-    [cobradoMes, pagosProveedorMes, gastosPagadosMes, impuestosPagadosCaja]
+    () => cobradoMes - gastosPagadosMes - impuestosPagadosCaja,
+    [cobradoMes, gastosPagadosMes, impuestosPagadosCaja]
   );
 
   const cobradoMesAnterior = useMemo(
     () => pagosClientesMesAnterior.reduce((total, valor) => total + valor, 0),
     [pagosClientesMesAnterior]
-  );
-
-  const pagosProveedorMesAnterior = useMemo(
-    () =>
-      pagosProveedoresMesAnterior.reduce((total, valor) => total + valor, 0),
-    [pagosProveedoresMesAnterior]
   );
 
   const gastosPagadosMesAnterior = useMemo(
@@ -579,12 +530,10 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
   const flujoMesAnterior = useMemo(
     () =>
       cobradoMesAnterior -
-      pagosProveedorMesAnterior -
       gastosPagadosMesAnterior -
       impuestosPagadosCajaMesAnterior,
     [
       cobradoMesAnterior,
-      pagosProveedorMesAnterior,
       gastosPagadosMesAnterior,
       impuestosPagadosCajaMesAnterior,
     ]
@@ -620,14 +569,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
       return total + Math.max(0, Number(cotizacion.total_final || 0) - pagado);
     }, 0);
   }, [cotizacionesAceptadasTodas, pagosClientesTodos]);
-
-  const tasaAceptacion = useMemo(() => {
-    if (cotizacionesMes.length === 0) {
-      return 0;
-    }
-
-    return (aceptadasDeCotizacionesEmitidasMes.length / cotizacionesMes.length) * 100;
-  }, [cotizacionesMes, aceptadasDeCotizacionesEmitidasMes]);
 
   const topClientes = useMemo(() => {
     const agrupado = new Map<string, number>();
@@ -747,20 +688,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
           <small>Durante el mes actual</small>
         </div>
 
-        <div className="finance-kpi-card">
-          <span>Cotizaciones aceptadas</span>
-          <strong>{aceptadasMes.length}</strong>
-          <small>Durante el mes actual</small>
-        </div>
-
-        <div className="finance-kpi-card">
-          <span>Tasa de aceptación</span>
-          <strong>{tasaAceptacion.toFixed(1)}%</strong>
-          <small>
-            {aceptadasDeCotizacionesEmitidasMes.length} de {cotizacionesMes.length} emitidas
-          </small>
-        </div>
-
         {esAdmin && (
           <>
             <div className="finance-kpi-card">
@@ -773,12 +700,6 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
               <span>Por cobrar total</span>
               <strong>{formatoDinero(porCobrar)}</strong>
               <small>Cotizaciones aceptadas pendientes</small>
-            </div>
-
-            <div className="finance-kpi-card">
-              <span>Gastos del mes</span>
-              <strong>{formatoDinero(gastosNetosMes)}</strong>
-              <small>Gasto neto registrado</small>
             </div>
 
             <div className="finance-kpi-card">
@@ -861,10 +782,8 @@ function Dashboard({ esAdmin, cambiarPagina }: DashboardProps) {
                     <td>
                       <span
                         className={`finance-badge ${
-                          cotizacion.estado === 'Aceptada'
+                          cotizacion.estado === 'Pagada'
                             ? 'finance-badge-success'
-                            : cotizacion.estado === 'Rechazada'
-                            ? 'finance-badge-expense'
                             : 'finance-badge-warning'
                         }`}
                       >

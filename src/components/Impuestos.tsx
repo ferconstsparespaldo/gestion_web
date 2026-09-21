@@ -20,7 +20,7 @@ type ImpuestoMensual = {
 
 type TabImpuestos = 'resumen' | 'flujo';
 
-type EstadoCobroIva = 'liberado' | 'pendiente' | 'sin_factura';
+type EstadoCobroIva = 'liberado' | 'pendiente';
 
 type CobroFlujo = {
   id: string;
@@ -28,7 +28,7 @@ type CobroFlujo = {
   numero: string;
   cliente: string;
   monto: number;
-  fechaFactura: string | null;
+  fechaAceptacion: string | null;
   estadoIva: EstadoCobroIva;
 };
 
@@ -50,7 +50,6 @@ function Impuestos() {
   const [estado, setEstado] = useState<'Pendiente' | 'Pagado'>('Pendiente');
   const [observaciones, setObservaciones] = useState('');
 
-  const [cotizacionesSinFactura, setCotizacionesSinFactura] = useState(0);
   const [cobrosFlujo, setCobrosFlujo] = useState<CobroFlujo[]>([]);
   const [cargandoFlujo, setCargandoFlujo] = useState(false);
 
@@ -62,7 +61,6 @@ function Impuestos() {
 
   useEffect(() => {
     cargarHistorial();
-    cargarAlertaSinFactura();
   }, []);
 
   useEffect(() => {
@@ -90,16 +88,6 @@ function Impuestos() {
     setLoading(false);
   }
 
-  async function cargarAlertaSinFactura() {
-    const { count } = await supabase
-      .from('cotizaciones')
-      .select('id', { count: 'exact', head: true })
-      .eq('estado', 'Aceptada')
-      .is('fecha_factura', null);
-
-    setCotizacionesSinFactura(count || 0);
-  }
-
   async function cargarFlujo(mes: string) {
     setCargandoFlujo(true);
 
@@ -120,7 +108,7 @@ function Impuestos() {
         cotizaciones (
           numero,
           cliente_razon_social,
-          fecha_factura
+          fecha_aceptacion
         )
       `
       )
@@ -142,17 +130,14 @@ function Impuestos() {
         cotizaciones: {
           numero: string;
           cliente_razon_social: string;
-          fecha_factura: string | null;
+          fecha_aceptacion: string | null;
         } | null;
       }>
     ).map((fila): CobroFlujo => {
-      const fechaFactura = fila.cotizaciones?.fecha_factura || null;
+      const fechaAceptacion = fila.cotizaciones?.fecha_aceptacion || null;
 
-      let estadoIva: EstadoCobroIva = 'sin_factura';
-
-      if (fechaFactura) {
-        estadoIva = fechaFactura < inicio ? 'liberado' : 'pendiente';
-      }
+      const estadoIva: EstadoCobroIva =
+        fechaAceptacion && fechaAceptacion < inicio ? 'liberado' : 'pendiente';
 
       return {
         id: fila.id,
@@ -160,7 +145,7 @@ function Impuestos() {
         numero: fila.cotizaciones?.numero || '',
         cliente: fila.cotizaciones?.cliente_razon_social || '',
         monto: Number(fila.monto || 0),
-        fechaFactura,
+        fechaAceptacion,
         estadoIva,
       };
     });
@@ -185,9 +170,9 @@ function Impuestos() {
       supabase
         .from('cotizaciones')
         .select('iva')
-        .eq('estado', 'Aceptada')
-        .gte('fecha_factura', inicio)
-        .lt('fecha_factura', siguiente),
+        .in('estado', ['Aceptada', 'Pagada'])
+        .gte('fecha_aceptacion', inicio)
+        .lt('fecha_aceptacion', siguiente),
 
       supabase
         .from('gastos')
@@ -321,14 +306,6 @@ function Impuestos() {
     [cobrosFlujo]
   );
 
-  const totalSinFactura = useMemo(
-    () =>
-      cobrosFlujo
-        .filter((fila) => fila.estadoIva === 'sin_factura')
-        .reduce((total, fila) => total + fila.monto, 0),
-    [cobrosFlujo]
-  );
-
   function formatoDinero(valor: number) {
     return formatearMonto(valor);
   }
@@ -377,16 +354,6 @@ function Impuestos() {
 
       {error && <div className="error-message">{error}</div>}
       {mensaje && <div className="success-message">{mensaje}</div>}
-
-      {cotizacionesSinFactura > 0 && (
-        <div className="error-message">
-          Tienes {cotizacionesSinFactura} cotización
-          {cotizacionesSinFactura === 1 ? '' : 'es'} aceptada
-          {cotizacionesSinFactura === 1 ? '' : 's'} sin fecha de factura.
-          Complétala en Cotizaciones para que su IVA se contabilice en el
-          período correcto.
-        </div>
-      )}
 
       <div className="finance-tabs">
         <button
@@ -618,17 +585,9 @@ function Impuestos() {
             </div>
 
             <div className="finance-kpi-card">
-              <span>Cobros de facturas de este mes</span>
+              <span>Cobros de cotizaciones de este mes</span>
               <strong>{formatoDinero(totalPendiente)}</strong>
-              <small>Su IVA se paga en el período de la factura</small>
-            </div>
-
-            <div className="finance-kpi-card">
-              <span>Cobros sin fecha de factura</span>
-              <strong className={totalSinFactura > 0 ? 'finance-negative' : ''}>
-                {formatoDinero(totalSinFactura)}
-              </strong>
-              <small>Completa la fecha de factura en Cotizaciones</small>
+              <small>Su IVA se paga en el período en que se aceptó la cotización</small>
             </div>
           </div>
 
@@ -637,7 +596,7 @@ function Impuestos() {
               <div>
                 <h2>Cobros de clientes de {formatoPeriodo(`${periodo}-01`)}</h2>
                 <p className="module-description">
-                  Cada cobro se clasifica según el mes de la factura de la
+                  Cada cobro se clasifica según el mes de aceptación de la
                   cotización que le dio origen, no según el mes del cobro.
                 </p>
               </div>
@@ -655,7 +614,7 @@ function Impuestos() {
                     <th>Cotización</th>
                     <th>Cliente</th>
                     <th className="right">Monto</th>
-                    <th>Fecha factura</th>
+                    <th>Fecha aceptación</th>
                     <th>Situación IVA</th>
                   </tr>
                 </thead>
@@ -669,7 +628,7 @@ function Impuestos() {
                       </td>
                       <td>{fila.cliente || '—'}</td>
                       <td className="right">{formatoDinero(fila.monto)}</td>
-                      <td>{formatoFecha(fila.fechaFactura)}</td>
+                      <td>{formatoFecha(fila.fechaAceptacion)}</td>
                       <td>
                         {fila.estadoIva === 'liberado' && (
                           <span className="finance-badge finance-badge-success">
@@ -679,11 +638,6 @@ function Impuestos() {
                         {fila.estadoIva === 'pendiente' && (
                           <span className="finance-badge finance-badge-warning">
                             IVA de este mes
-                          </span>
-                        )}
-                        {fila.estadoIva === 'sin_factura' && (
-                          <span className="finance-badge finance-badge-expense">
-                            Sin fecha de factura
                           </span>
                         )}
                       </td>

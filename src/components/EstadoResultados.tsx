@@ -18,7 +18,6 @@ type Resumen = {
   ppmPagado: number;
   resultadoFinal: number;
   ingresosCaja: number;
-  pagosProveedores: number;
   gastosPagados: number;
   impuestosPagadosCaja: number;
   egresosCaja: number;
@@ -35,7 +34,6 @@ const VACIO: Resumen = {
   ppmPagado: 0,
   resultadoFinal: 0,
   ingresosCaja: 0,
-  pagosProveedores: 0,
   gastosPagados: 0,
   impuestosPagadosCaja: 0,
   egresosCaja: 0,
@@ -74,14 +72,13 @@ function EstadoResultados() {
       gastosResult,
       gastosPagadosResult,
       pagosClientesResult,
-      pagosProveedoresResult,
       impuestoPeriodoResult,
       impuestosCajaResult,
     ] = await Promise.all([
       supabase
         .from('cotizaciones')
         .select('id, neto_total')
-        .eq('estado', 'Aceptada')
+        .in('estado', ['Aceptada', 'Pagada'])
         .gte('fecha_aceptacion', inicio)
         .lt('fecha_aceptacion', siguiente),
 
@@ -107,12 +104,6 @@ function EstadoResultados() {
         .lt('fecha', siguiente),
 
       supabase
-        .from('pagos_proveedores')
-        .select('monto')
-        .gte('fecha', inicio)
-        .lt('fecha', siguiente),
-
-      supabase
         .from('impuestos_mensuales')
         .select('iva_pagado, ppm_pagado')
         .eq('periodo', inicio)
@@ -130,7 +121,6 @@ function EstadoResultados() {
       gastosResult.error,
       gastosPagadosResult.error,
       pagosClientesResult.error,
-      pagosProveedoresResult.error,
       impuestoPeriodoResult.error,
       impuestosCajaResult.error,
     ].filter(Boolean);
@@ -203,11 +193,6 @@ function EstadoResultados() {
       0
     );
 
-    const pagosProveedores = (pagosProveedoresResult.data || []).reduce(
-      (total, fila) => total + Number(fila.monto || 0),
-      0
-    );
-
     const impuestosPagadosCaja = (impuestosCajaResult.data || []).reduce(
       (total, fila) =>
         total +
@@ -216,8 +201,7 @@ function EstadoResultados() {
       0
     );
 
-    const egresosCaja =
-      pagosProveedores + gastosPagados + impuestosPagadosCaja;
+    const egresosCaja = gastosPagados + impuestosPagadosCaja;
 
     const flujoNeto = ingresosCaja - egresosCaja;
 
@@ -231,7 +215,6 @@ function EstadoResultados() {
       ppmPagado,
       resultadoFinal,
       ingresosCaja,
-      pagosProveedores,
       gastosPagados,
       impuestosPagadosCaja,
       egresosCaja,
@@ -387,11 +370,6 @@ function EstadoResultados() {
                 <div className="positive">
                   <span>+ Pagos recibidos de clientes</span>
                   <strong>{formatoDinero(resumen.ingresosCaja)}</strong>
-                </div>
-
-                <div className="negative">
-                  <span>− Pagos a proveedores</span>
-                  <strong>{formatoDinero(resumen.pagosProveedores)}</strong>
                 </div>
 
                 <div className="negative">

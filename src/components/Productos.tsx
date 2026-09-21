@@ -1,121 +1,98 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { STORAGE } from '../lib/storage';
 import { formatearNumero } from '../utils/formato';
 
 type ProductosProps = {
   esAdmin: boolean;
 };
 
-type Proveedor = {
-  id: string;
-  razon_social: string;
-};
-
-type ProductoProveedor = {
-  id: string;
-  proveedor_id: string;
-  precio_neto_actual: number;
-  beneficio_sugerido: number;
-  proveedores?: {
-    razon_social: string;
-  } | null;
-};
-
 type Producto = {
   id: string;
   nombre: string;
   descripcion: string | null;
+  imagen_url: string | null;
   categoria: string | null;
   activo: boolean;
-  producto_proveedor?: ProductoProveedor[];
+  precio: number;
+  costo: number;
 };
 
 type FormProducto = {
   nombre: string;
   descripcion: string;
+  imagen_url: string;
   categoria: string;
-  proveedor_id: string;
-  precio_neto_actual: string;
-  beneficio_sugerido: string;
+  precio: string;
+  costo: string;
 };
 
 const productoVacio: FormProducto = {
   nombre: '',
   descripcion: '',
+  imagen_url: '',
   categoria: '',
-  proveedor_id: '',
-  precio_neto_actual: '',
-  beneficio_sugerido: '',
+  precio: '',
+  costo: '',
 };
 
 function Productos({ esAdmin }: ProductosProps) {
   const [productos, setProductos] = useState<Producto[]>([]);
-  const [proveedores, setProveedores] = useState<Proveedor[]>([]);
 
   const [busqueda, setBusqueda] = useState('');
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [relacionEditandoId, setRelacionEditandoId] = useState<string | null>(
-    null
-  );
 
   const [form, setForm] = useState<FormProducto>(productoVacio);
+
+  const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
+
+  const [previewArchivo, setPreviewArchivo] = useState<string>('');
 
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [eliminandoId, setEliminandoId] = useState<string | null>(null);
+  const [subiendoImagen, setSubiendoImagen] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     cargarTodo();
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (previewArchivo.startsWith('blob:')) {
+        URL.revokeObjectURL(previewArchivo);
+      }
+    };
+  }, [previewArchivo]);
+
   async function cargarTodo() {
     setLoading(true);
     setError('');
 
-    const [productosResult, proveedoresResult] = await Promise.all([
-      supabase
-        .from('productos')
-        .select(
-          `
-            id,
-            nombre,
-            descripcion,
-            categoria,
-            activo,
-            producto_proveedor (
-              id,
-              proveedor_id,
-              precio_neto_actual,
-              beneficio_sugerido,
-              proveedores (
-                razon_social
-              )
-            )
-          `
-        )
-        .eq('activo', true)
-        .order('nombre'),
+    const { data, error: productosError } = await supabase
+      .from('productos')
+      .select(
+        `
+          id,
+          nombre,
+          descripcion,
+          imagen_url,
+          categoria,
+          activo,
+          precio,
+          costo
+        `
+      )
+      .eq('activo', true)
+      .order('nombre');
 
-      supabase
-        .from('proveedores')
-        .select('id, razon_social')
-        .eq('activo', true)
-        .order('razon_social'),
-    ]);
-
-    if (productosResult.error) {
-      setError(productosResult.error.message);
+    if (productosError) {
+      setError(productosError.message);
     } else {
-      setProductos((productosResult.data || []) as unknown as Producto[]);
-    }
-
-    if (proveedoresResult.error) {
-      setError(proveedoresResult.error.message);
-    } else {
-      setProveedores(proveedoresResult.data || []);
+      setProductos((data || []) as Producto[]);
     }
 
     setLoading(false);
@@ -124,28 +101,29 @@ function Productos({ esAdmin }: ProductosProps) {
   function nuevoProducto() {
     setForm(productoVacio);
 
+    setArchivoImagen(null);
+    setPreviewArchivo('');
+
     setEditandoId(null);
-    setRelacionEditandoId(null);
 
     setMostrarFormulario(true);
     setError('');
   }
 
   function editarProducto(producto: Producto) {
-    const relacion = producto.producto_proveedor?.[0];
-
     setForm({
       nombre: producto.nombre || '',
       descripcion: producto.descripcion || '',
+      imagen_url: producto.imagen_url || '',
       categoria: producto.categoria || '',
-      proveedor_id: relacion?.proveedor_id || '',
-      precio_neto_actual: relacion?.precio_neto_actual?.toString() || '',
-      beneficio_sugerido: relacion?.beneficio_sugerido?.toString() || '',
+      precio: producto.precio?.toString() || '',
+      costo: producto.costo?.toString() || '',
     });
 
-    setEditandoId(producto.id);
+    setArchivoImagen(null);
+    setPreviewArchivo('');
 
-    setRelacionEditandoId(relacion?.id || null);
+    setEditandoId(producto.id);
 
     setMostrarFormulario(true);
     setError('');
@@ -154,11 +132,69 @@ function Productos({ esAdmin }: ProductosProps) {
   function cancelar() {
     setForm(productoVacio);
 
+    setArchivoImagen(null);
+    setPreviewArchivo('');
+
     setEditandoId(null);
-    setRelacionEditandoId(null);
 
     setMostrarFormulario(false);
     setError('');
+  }
+
+  function seleccionarImagen(e: React.ChangeEvent<HTMLInputElement>) {
+    const archivo = e.target.files?.[0];
+
+    if (!archivo) return;
+
+    const tiposPermitidos = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+    if (!tiposPermitidos.has(archivo.type)) {
+      setError('La imagen debe ser JPG, PNG o WEBP.');
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (archivo.size > maxSize) {
+      setError('La imagen no puede pesar más de 5 MB.');
+      return;
+    }
+
+    setArchivoImagen(archivo);
+    setPreviewArchivo(URL.createObjectURL(archivo));
+
+    setError('');
+  }
+
+  async function subirImagenSupabase(archivo: File) {
+    setSubiendoImagen(true);
+
+    const extension = archivo.name.split('.').pop() || 'jpg';
+
+    const nombreArchivo = `${crypto.randomUUID()}.${extension}`;
+
+    const ruta = `productos/${nombreArchivo}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(STORAGE.bucketProductos)
+      .upload(ruta, archivo, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: archivo.type,
+      });
+
+    if (uploadError) {
+      setSubiendoImagen(false);
+      throw uploadError;
+    }
+
+    const { data } = supabase.storage
+      .from(STORAGE.bucketProductos)
+      .getPublicUrl(ruta);
+
+    setSubiendoImagen(false);
+
+    return { publicUrl: data.publicUrl, ruta };
   }
 
   async function guardarProducto(e: React.FormEvent) {
@@ -167,8 +203,8 @@ function Productos({ esAdmin }: ProductosProps) {
     setGuardando(true);
     setError('');
 
-    const precioNeto = Number(form.precio_neto_actual || 0);
-    const beneficio = Number(form.beneficio_sugerido || 0);
+    const precio = Number(form.precio || 0);
+    const costo = Number(form.costo || 0);
 
     if (!form.nombre.trim()) {
       setError('Debes ingresar el nombre del producto.');
@@ -176,35 +212,55 @@ function Productos({ esAdmin }: ProductosProps) {
       return;
     }
 
-    if (precioNeto < 0 || beneficio < 0) {
-      setError('Los precios no pueden ser negativos.');
+    if (precio < 0 || costo < 0) {
+      setError('El precio y el costo no pueden ser negativos.');
       setGuardando(false);
       return;
+    }
+
+    let imagenFinal = form.imagen_url.trim() || null;
+    let rutaNuevaImagen: string | null = null;
+
+    if (archivoImagen) {
+      try {
+        const subida = await subirImagenSupabase(archivoImagen);
+        imagenFinal = subida.publicUrl;
+        rutaNuevaImagen = subida.ruta;
+      } catch (err) {
+        setError(
+          `No se pudo subir la imagen: ${
+            err instanceof Error ? err.message : 'Error desconocido'
+          }`
+        );
+        setGuardando(false);
+        return;
+      }
     }
 
     const datosProducto = {
       nombre: form.nombre.trim(),
       descripcion: form.descripcion.trim() || null,
+      imagen_url: imagenFinal,
       categoria: form.categoria.trim() || null,
-    };
-
-    const datosRelacion = {
-      proveedor_id: form.proveedor_id,
-      precio_neto_actual: precioNeto,
-      beneficio_sugerido: beneficio,
+      precio,
+      costo,
     };
 
     const { error: guardarError } = await supabase.rpc(
       'guardar_producto_transaccional',
       {
         p_producto_id: editandoId,
-        p_relacion_id: relacionEditandoId,
         p_producto: datosProducto,
-        p_relacion: datosRelacion,
       }
     );
 
     if (guardarError) {
+      if (rutaNuevaImagen) {
+        await supabase.storage
+          .from(STORAGE.bucketProductos)
+          .remove([rutaNuevaImagen]);
+      }
+
       setError(guardarError.message);
       setGuardando(false);
       return;
@@ -248,15 +304,13 @@ function Productos({ esAdmin }: ProductosProps) {
   const productosFiltrados = productos.filter((producto) => {
     const texto = busqueda.toLowerCase();
 
-    const proveedor =
-      producto.producto_proveedor?.[0]?.proveedores?.razon_social || '';
-
     return (
       producto.nombre.toLowerCase().includes(texto) ||
-      (producto.categoria || '').toLowerCase().includes(texto) ||
-      proveedor.toLowerCase().includes(texto)
+      (producto.categoria || '').toLowerCase().includes(texto)
     );
   });
+
+  const imagenPreview = previewArchivo || form.imagen_url;
 
   return (
     <div className="module-page">
@@ -267,7 +321,7 @@ function Productos({ esAdmin }: ProductosProps) {
           <h1>Productos</h1>
 
           <p className="module-description">
-            Administra productos, proveedores y precios netos.
+            Administra productos, precios e imágenes.
           </p>
         </div>
 
@@ -279,7 +333,7 @@ function Productos({ esAdmin }: ProductosProps) {
       <div className="toolbar">
         <input
           className="search-input"
-          placeholder="Buscar producto, categoría o proveedor..."
+          placeholder="Buscar producto o categoría..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
@@ -343,40 +397,76 @@ function Productos({ esAdmin }: ProductosProps) {
                 />
               </label>
 
-              {/* PROVEEDOR */}
+              {/* IMAGEN */}
 
-              <label>
-                Proveedor (opcional)
-                <select
-                  value={form.proveedor_id}
+              <div className="full-width image-section">
+                <h3>Imagen del producto</h3>
+
+                <p className="small-muted">
+                  Puedes pegar una URL o seleccionar una imagen desde el
+                  computador.
+                </p>
+              </div>
+
+              <label className="full-width">
+                URL de imagen
+                <input
+                  value={form.imagen_url}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      proveedor_id: e.target.value,
+                      imagen_url: e.target.value,
                     })
                   }
-                >
-                  <option value="">Sin proveedor</option>
-
-                  {proveedores.map((proveedor) => (
-                    <option key={proveedor.id} value={proveedor.id}>
-                      {proveedor.razon_social}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="https://..."
+                />
               </label>
 
+              <div className="full-width upload-area">
+                <span className="upload-label">O subir desde computador</span>
+
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={seleccionarImagen}
+                />
+
+                {archivoImagen && (
+                  <p className="small-muted">
+                    Archivo seleccionado: <strong>{archivoImagen.name}</strong>
+                  </p>
+                )}
+              </div>
+
+              {imagenPreview && (
+                <div className="full-width">
+                  <p className="small-muted">Vista previa</p>
+
+                  <div className="product-image-preview">
+                    <img
+                      src={imagenPreview}
+                      alt="Vista previa"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* PRECIO Y COSTO */}
+
               <label>
-                Precio neto proveedor *
+                Costo *
                 <input
                   type="number"
                   min="0"
                   step="1"
-                  value={form.precio_neto_actual}
+                  value={form.costo}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      precio_neto_actual: e.target.value,
+                      costo: e.target.value,
                     })
                   }
                   required
@@ -384,29 +474,19 @@ function Productos({ esAdmin }: ProductosProps) {
               </label>
 
               <label>
-                Beneficio por unidad
+                Precio *
                 <input
                   type="number"
                   min="0"
                   step="1"
-                  value={form.beneficio_sugerido}
+                  value={form.precio}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      beneficio_sugerido: e.target.value,
+                      precio: e.target.value,
                     })
                   }
-                />
-              </label>
-
-              <label>
-                Precio neto sugerido
-                <input
-                  value={
-                    Number(form.precio_neto_actual || 0) +
-                    Number(form.beneficio_sugerido || 0)
-                  }
-                  disabled
+                  required
                 />
               </label>
             </div>
@@ -423,9 +503,13 @@ function Productos({ esAdmin }: ProductosProps) {
               <button
                 type="submit"
                 className="primary-button"
-                disabled={guardando}
+                disabled={guardando || subiendoImagen}
               >
-                {guardando ? 'Guardando...' : 'Guardar producto'}
+                {subiendoImagen
+                  ? 'Subiendo imagen...'
+                  : guardando
+                  ? 'Guardando...'
+                  : 'Guardar producto'}
               </button>
             </div>
           </form>
@@ -445,25 +529,34 @@ function Productos({ esAdmin }: ProductosProps) {
           <table>
             <thead>
               <tr>
+                <th>Imagen</th>
                 <th>Producto</th>
-                <th>Proveedor</th>
-                <th>Costo neto</th>
-                <th>Beneficio</th>
-                <th>Venta sugerida</th>
+                <th>Costo</th>
+                <th>Margen</th>
+                <th>Precio</th>
                 <th></th>
               </tr>
             </thead>
 
             <tbody>
               {productosFiltrados.map((producto) => {
-                const relacion = producto.producto_proveedor?.[0];
-
-                const costo = Number(relacion?.precio_neto_actual || 0);
-
-                const beneficio = Number(relacion?.beneficio_sugerido || 0);
+                const costo = Number(producto.costo || 0);
+                const precio = Number(producto.precio || 0);
 
                 return (
                   <tr key={producto.id}>
+                    <td>
+                      {producto.imagen_url ? (
+                        <img
+                          className="product-table-image"
+                          src={producto.imagen_url}
+                          alt={producto.nombre}
+                        />
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+
                     <td>
                       <strong>{producto.nombre}</strong>
 
@@ -472,13 +565,11 @@ function Productos({ esAdmin }: ProductosProps) {
                       </div>
                     </td>
 
-                    <td>{relacion?.proveedores?.razon_social || '—'}</td>
-
                     <td>${formatearNumero(costo)}</td>
 
-                    <td>${formatearNumero(beneficio)}</td>
+                    <td>${formatearNumero(precio - costo)}</td>
 
-                    <td>${formatearNumero(costo + beneficio)}</td>
+                    <td>${formatearNumero(precio)}</td>
 
                     <td>
                       <div className="table-row-actions">
